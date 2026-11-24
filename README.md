@@ -1,2 +1,0 @@
-# Fichada
-Ficha LPO
