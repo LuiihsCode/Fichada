@@ -1,0 +1,3280 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="terminal">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- PWA: instalar a ficha no celular/PC e abrir offline -->
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#121110" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Ficha LP" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <title>LOST PARADISE // Ficha do Sobrevivente</title>
+
+  <!-- Fontes oficiais do sistema Lost Paradise -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ==========================================================================
+       1. DESIGN SYSTEM & VARIÁVEIS DE TEMA (IDÊNTICO À TELA DO MESTRE)
+       ========================================================================== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      border-radius: 0 !important;
+    }
+
+    :root,
+    html[data-theme="terminal"] {
+      --bg-page: #121110;
+      --bg-surface: #1E1C1A;
+      --bg-recessed: #171614;
+      --border-line: #38322E;
+      --border-strong: #544B45;
+      --rule-line: #2A2623;
+      --text-main: #E5DFD3;
+      --text-muted: #8C857B;
+      --text-faint: #635D56;
+      --accent-primary: #E07A16;
+      --accent-primary-ink: #121110;
+      --accent-primary-tint: rgba(224, 122, 22, 0.14);
+      --accent-critical: #8A3324;
+      --accent-critical-ink: #E5DFD3;
+      --accent-critical-tint: rgba(138, 51, 36, 0.24);
+      --accent-olive: #6E8B5B;
+      --accent-olive-ink: #121110;
+      --accent-olive-tint: rgba(110, 139, 91, 0.18);
+    }
+
+    html[data-theme="papel"] {
+      --bg-page: #D7D0BE;
+      --bg-surface: #E6E0CE;
+      --bg-recessed: #CFC7B3;
+      --border-line: #8F8672;
+      --border-strong: #1B1917;
+      --rule-line: #B8AF9B;
+      --text-main: #1B1917;
+      --text-muted: #544E44;
+      --text-faint: #787063;
+      --accent-primary: #B85609;
+      --accent-primary-ink: #E6E0CE;
+      --accent-primary-tint: rgba(184, 86, 9, 0.14);
+      --accent-critical: #8A3324;
+      --accent-critical-ink: #E6E0CE;
+      --accent-critical-tint: rgba(138, 51, 36, 0.18);
+      --accent-olive: #4E6B3E;
+      --accent-olive-ink: #E6E0CE;
+      --accent-olive-tint: rgba(78, 107, 62, 0.18);
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      font-family: 'Courier Prime', monospace;
+      font-size: 14px;
+      line-height: 1.45;
+      overflow-x: hidden;
+    }
+
+    body {
+      padding-bottom: 126px; /* Espaço para o .dice-dock inferior fixo */
+    }
+
+    /* ==========================================================================
+       2. BARRA SUPERIOR FIXA (.toolbar) & BARRA DE AVISO INLINE (.notice-bar)
+       ========================================================================== */
+    .toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background-color: var(--bg-surface);
+      border-bottom: 2px solid var(--border-strong);
+      padding: 8px 14px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .toolbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .toolbar-title {
+      font-family: 'Oswald', sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toolbar-title::before {
+      content: "";
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      background-color: var(--accent-primary);
+    }
+
+    .save-badge {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border: 1px solid var(--accent-olive);
+      background-color: var(--accent-olive-tint);
+      color: var(--accent-olive);
+    }
+
+    .toolbar-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 6px 10px;
+      border: 1px solid var(--border-strong);
+      background-color: var(--bg-recessed);
+      color: var(--text-main);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+    }
+
+    .btn:hover {
+      border-color: var(--accent-primary);
+      background-color: var(--accent-primary-tint);
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+    }
+
+    .btn-primary {
+      background-color: var(--accent-primary);
+      border-color: var(--accent-primary);
+      color: var(--accent-primary-ink);
+    }
+
+    .btn-primary:hover {
+      filter: brightness(1.08);
+      background-color: var(--accent-primary);
+    }
+
+    .btn-critical {
+      border-color: var(--accent-critical);
+      background-color: var(--accent-critical-tint);
+      color: var(--text-main);
+    }
+
+    .btn-critical:hover {
+      background-color: var(--accent-critical);
+      color: var(--accent-critical-ink);
+    }
+
+    .btn-sm {
+      padding: 3px 7px;
+      font-size: 10px;
+    }
+
+    /* Barra de aviso inline (confirmação de limpeza e notificações sem alert/confirm) */
+    .notice-bar {
+      display: none;
+      background-color: var(--bg-surface);
+      border-bottom: 2px solid var(--accent-primary);
+      padding: 9px 14px;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+    }
+
+    .notice-bar.is-visible {
+      display: flex;
+    }
+
+    .notice-bar.is-critical {
+      border-bottom-color: var(--accent-critical);
+      background-color: var(--accent-critical-tint);
+    }
+
+    .notice-text {
+      font-weight: 600;
+      letter-spacing: 0.03em;
+    }
+
+    .notice-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* ==========================================================================
+       3. CONTAINER PRINCIPAL & ESTRUTURA DE PAINÉIS (.panel-frame / .sec-bar)
+       ========================================================================== */
+    .sheet-container {
+      max-width: 1120px;
+      margin: 16px auto;
+      padding: 0 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .panel-frame {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-strong);
+    }
+
+    .sec-bar {
+      background-color: var(--bg-recessed);
+      border-bottom: 1px solid var(--border-strong);
+      padding: 7px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .sec-title {
+      font-family: 'Oswald', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-main);
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sec-title::before {
+      content: "";
+      display: inline-block;
+      width: 6px;
+      height: 14px;
+      background-color: var(--accent-primary);
+    }
+
+    .sec-meta {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .panel-body {
+      padding: 12px;
+    }
+
+    /* ==========================================================================
+       4. CAMPOS DE ENTRADA, LABELS, CHECKBOXES E BADGES
+       ========================================================================== */
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .field-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .input-box,
+    .textarea-box,
+    .select-box {
+      width: 100%;
+      background-color: var(--bg-recessed);
+      border: 1px solid var(--border-line);
+      color: var(--text-main);
+      font-family: 'Courier Prime', monospace;
+      font-size: 14px;
+      padding: 6px 8px;
+      outline: none;
+      transition: border-color 0.12s ease, background-color 0.12s ease;
+    }
+
+    .input-box:focus,
+    .textarea-box:focus,
+    .select-box:focus {
+      border-color: var(--accent-primary);
+      background-color: var(--bg-page);
+    }
+
+    .input-box::placeholder,
+    .textarea-box::placeholder {
+      color: var(--text-faint);
+    }
+
+    .textarea-box {
+      resize: vertical;
+      min-height: 58px;
+    }
+
+    .input-num {
+      font-family: 'IBM Plex Mono', monospace;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
+
+    /* Checkbox quadrado brutalista (.check-box) */
+    .check-box {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      min-width: 16px;
+      border: 1px solid var(--border-strong);
+      background-color: var(--bg-recessed);
+      cursor: pointer;
+      display: inline-grid;
+      place-content: center;
+      margin: 0;
+    }
+
+    .check-box:hover {
+      border-color: var(--accent-primary);
+    }
+
+    .check-box:checked {
+      background-color: var(--accent-primary);
+      border-color: var(--accent-primary);
+    }
+
+    .check-box:checked::after {
+      content: "X";
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1;
+      color: var(--accent-primary-ink);
+    }
+
+    .check-box.is-olive:checked {
+      background-color: var(--accent-olive);
+      border-color: var(--accent-olive);
+    }
+    .check-box.is-olive:checked::after {
+      color: var(--accent-olive-ink);
+    }
+
+    .check-box.is-critical:checked {
+      background-color: var(--accent-critical);
+      border-color: var(--accent-critical);
+    }
+    .check-box.is-critical:checked::after {
+      color: var(--accent-critical-ink);
+    }
+
+    .check-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      cursor: pointer;
+      user-select: none;
+      font-size: 13px;
+    }
+
+    .status-badge {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 2px 6px;
+      border: 1px solid var(--border-strong);
+      background-color: var(--bg-recessed);
+      color: var(--text-muted);
+    }
+
+    .status-badge.is-ok {
+      border-color: var(--accent-olive);
+      background-color: var(--accent-olive-tint);
+      color: var(--accent-olive);
+    }
+
+    .status-badge.is-warn {
+      border-color: var(--accent-primary);
+      background-color: var(--accent-primary-tint);
+      color: var(--accent-primary);
+    }
+
+    .status-badge.is-crit {
+      border-color: var(--accent-critical);
+      background-color: var(--accent-critical);
+      color: var(--accent-critical-ink);
+    }
+
+    /* ==========================================================================
+       5. GRADES ESPECÍFICAS DAS SEÇÕES
+       ========================================================================== */
+    .grid-id-top {
+      display: grid;
+      grid-template-columns: 2fr 1.5fr 1.5fr 1.5fr 84px;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .grid-id-bottom {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    /* Atributos */
+    .grid-attrs {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+    }
+
+    .attr-box {
+      background-color: var(--bg-recessed);
+      border: 1px solid var(--border-line);
+      padding: 10px 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .attr-name {
+      font-family: 'Oswald', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-main);
+    }
+
+    .attr-input {
+      width: 66px;
+      height: 44px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 22px;
+      font-weight: 700;
+      text-align: center;
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-strong);
+      color: var(--text-main);
+      outline: none;
+    }
+
+    .attr-input:focus {
+      border-color: var(--accent-primary);
+    }
+
+    /* Recursos, Rotina e Defesas (3 colunas) */
+    .grid-vitals {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .sub-box {
+      background-color: var(--bg-recessed);
+      border: 1px solid var(--border-line);
+      padding: 9px 10px;
+      margin-bottom: 8px;
+    }
+
+    .sub-box:last-child {
+      margin-bottom: 0;
+    }
+
+    .sub-box-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+
+    .counter-row {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .step-btn {
+      width: 28px;
+      height: 28px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 14px;
+      font-weight: 700;
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-strong);
+      color: var(--text-main);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .step-btn:hover {
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
+    }
+
+    .counter-input {
+      width: 50px;
+      height: 28px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 14px;
+      font-weight: 700;
+      text-align: center;
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-line);
+      color: var(--text-main);
+    }
+
+    .helper-note {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 5px;
+    }
+
+    /* Perícias (Grade Única Sem Categorias ou Nomes de Atributo) */
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+
+    .skill-item {
+      background-color: var(--bg-recessed);
+      border: 1px solid var(--border-line);
+      padding: 5px 7px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      min-height: 34px;
+    }
+
+    .skill-item.is-trained {
+      border-color: var(--accent-primary);
+      background-color: var(--accent-primary-tint);
+    }
+
+    .skill-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .skill-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .skill-rank {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent-primary);
+      flex-shrink: 0;
+    }
+
+    .skill-prof-input {
+      width: 100%;
+      min-width: 54px;
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-line);
+      color: var(--text-main);
+      font-family: 'Courier Prime', monospace;
+      font-size: 12px;
+      padding: 2px 5px;
+      outline: none;
+    }
+
+    .skill-prof-input:focus {
+      border-color: var(--accent-primary);
+    }
+
+    .skill-roll-btn {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 6px;
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-strong);
+      color: var(--accent-primary);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .skill-roll-btn:hover {
+      background-color: var(--accent-primary);
+      border-color: var(--accent-primary);
+      color: var(--accent-primary-ink);
+    }
+
+    /* Privilégio e Alteração (Dissonante) */
+    .grid-two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .panel-frame.is-dissonant-active {
+      border-color: var(--accent-primary);
+      box-shadow: inset 0 0 0 1px var(--accent-primary);
+    }
+
+    .panel-frame.is-dissonant-active .sec-bar {
+      background-color: var(--accent-primary-tint);
+      border-bottom-color: var(--accent-primary);
+    }
+
+    /* Tabelas Dinâmicas: Poderes, Armas e Vínculos */
+    .dynamic-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .power-row {
+      background-color: var(--bg-recessed);
+      border: 1px solid var(--border-line);
+      padding: 8px;
+      display: grid;
+      grid-template-columns: 64px 1.4fr 1fr 2.4fr auto;
+      gap: 8px;
+      align-items: start;
+    }
+
+    .weapon-row {
+      background-color: var(--bg-recessed);
+      border: 1px solid var(--border-line);
+      padding: 8px;
+      display: grid;
+      grid-template-columns: 1.5fr 0.9fr 0.6fr 0.9fr 1.2fr 1.2fr auto;
+      gap: 8px;
+      align-items: end;
+    }
+
+    .bond-row {
+      background-color: var(--bg-recessed);
+      border: 1px solid var(--border-line);
+      padding: 8px;
+      display: grid;
+      grid-template-columns: 1.2fr 2.4fr auto;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .prof-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      background-color: var(--bg-recessed);
+      border: 1px solid var(--border-line);
+      padding: 8px 10px;
+      margin-bottom: 12px;
+    }
+
+    .prot-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 2fr 90px;
+      gap: 10px;
+      background-color: var(--bg-recessed);
+      border: 1px solid var(--border-line);
+      padding: 8px 10px;
+      margin-top: 12px;
+      margin-bottom: 12px;
+    }
+
+    .supplies-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    /* ==========================================================================
+       6. DOCK INFERIOR FIXO DE ROLAGEM DE DADOS (.dice-dock)
+       ========================================================================== */
+    .dice-dock {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 60;
+      background-color: var(--bg-surface);
+      border-top: 2px solid var(--accent-primary);
+      padding: 8px 14px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .dock-controls {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .pool-presets {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .pool-btn {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 6px;
+      background-color: var(--bg-recessed);
+      border: 1px solid var(--border-line);
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+
+    .pool-btn:hover {
+      border-color: var(--accent-primary);
+      color: var(--text-main);
+    }
+
+    .pool-btn.is-active {
+      background-color: var(--accent-primary);
+      border-color: var(--accent-primary);
+      color: var(--accent-primary-ink);
+    }
+
+    .dock-results {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      flex: 1;
+      justify-content: flex-end;
+    }
+
+    .dice-chips-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .die-chip {
+      width: 30px;
+      height: 30px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 14px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--bg-recessed);
+      border: 1px solid var(--border-strong);
+      color: var(--text-muted);
+    }
+
+    /* 6 = Sucesso Limpo */
+    .die-chip.is-limpo {
+      background-color: var(--accent-olive);
+      border-color: var(--accent-olive);
+      color: var(--accent-olive-ink);
+    }
+
+    /* 5 ou par de 3 / par de 4 = Sucesso com Esforço */
+    .die-chip.is-esforco {
+      background-color: var(--accent-primary);
+      border-color: var(--accent-primary);
+      color: var(--accent-primary-ink);
+    }
+
+    /* 1 = Falha / Risco */
+    .die-chip.is-one {
+      background-color: var(--accent-critical-tint);
+      border-color: var(--accent-critical);
+      color: var(--accent-critical);
+    }
+
+    .dock-readout {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .dock-context {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .crit-badge {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 6px;
+      background-color: var(--accent-critical);
+      color: var(--accent-critical-ink);
+      letter-spacing: 0.06em;
+    }
+
+    /* ==========================================================================
+       7. MODAL DE REGRAS RÁPIDAS
+       ========================================================================== */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      background-color: rgba(0, 0, 0, 0.72);
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal-backdrop.is-open {
+      display: flex;
+    }
+
+    .modal-box {
+      width: 100%;
+      max-width: 720px;
+      max-height: 85vh;
+      overflow-y: auto;
+      background-color: var(--bg-surface);
+      border: 2px solid var(--accent-primary);
+    }
+
+    .rules-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .rule-card {
+      background-color: var(--bg-recessed);
+      border: 1px solid var(--border-line);
+      padding: 10px;
+    }
+
+    .rule-card h4 {
+      font-family: 'Oswald', sans-serif;
+      font-size: 13px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--accent-primary);
+      margin: 0 0 6px 0;
+    }
+
+    .rule-card ul {
+      margin: 0;
+      padding-left: 16px;
+      font-size: 12px;
+      color: var(--text-main);
+    }
+
+    .rule-card li {
+      margin-bottom: 4px;
+    }
+
+    /* ==========================================================================
+       7B. COR DA FICHA E DADOS CUSTOMIZADOS
+       ========================================================================== */
+    .color-swatches {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .color-swatch {
+      width: 34px;
+      height: 34px;
+      padding: 0;
+      border: 1px solid var(--border-strong);
+      cursor: pointer;
+    }
+
+    .color-swatch:hover {
+      border-color: var(--text-main);
+    }
+
+    .color-swatch.is-active {
+      outline: 2px solid var(--text-main);
+      outline-offset: 2px;
+    }
+
+    .color-custom {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .color-custom input[type="color"] {
+      width: 44px;
+      height: 30px;
+      padding: 0;
+      border: 1px solid var(--border-strong);
+      background-color: var(--bg-recessed);
+      cursor: pointer;
+    }
+
+    .dice-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      gap: 12px;
+    }
+
+    .dice-controls .input-box {
+      width: 72px;
+    }
+
+    .dice-scene {
+      position: relative;
+      margin-top: 12px;
+      height: 170px;
+      background-color: var(--bg-recessed);
+      border: 1px solid var(--border-line);
+      perspective: 700px;
+      overflow: hidden;
+    }
+
+    .dice-scene:empty::before {
+      content: "ESCOLHA O DADO E ROLE";
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      color: var(--text-faint);
+    }
+
+    .die-3d {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 0;
+      height: 0;
+      transform-style: preserve-3d;
+    }
+
+    .die-face {
+      position: absolute;
+      left: 0;
+      top: 0;
+      transform-origin: 0 0;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+
+    .die-num {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      font-family: 'IBM Plex Mono', monospace;
+      font-weight: 700;
+      line-height: 1;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    .die-num.is-marked {
+      text-decoration: underline;
+    }
+
+    .dice-result {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 12px;
+      min-height: 30px;
+    }
+
+    /* ==========================================================================
+       8. RESPONSIVIDADE MOBILE / TABLET
+       ========================================================================== */
+    @media (max-width: 960px) {
+      .grid-id-top {
+        grid-template-columns: 1fr 1fr;
+      }
+      .grid-vitals {
+        grid-template-columns: 1fr;
+      }
+      .skills-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .grid-two-col {
+        grid-template-columns: 1fr;
+      }
+      .power-row {
+        grid-template-columns: 70px 1fr 1fr;
+      }
+      .weapon-row {
+        grid-template-columns: 1fr 1fr;
+      }
+      .supplies-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .prof-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding-bottom: 165px;
+      }
+      .grid-id-top,
+      .grid-id-bottom,
+      .skills-grid,
+      .prot-grid,
+      .bond-row,
+      .rules-grid {
+        grid-template-columns: 1fr;
+      }
+      .grid-attrs {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .pool-presets {
+        flex-wrap: wrap;
+      }
+    }
+
+    /* ==========================================================================
+       9. IMPRESSÃO / EXPORTAÇÃO PDF EM FOLHA A4
+       ========================================================================== */
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 8mm;
+      }
+
+      html, body {
+        background: #FFFFFF !important;
+        color: #111111 !important;
+        font-size: 9pt !important;
+        line-height: 1.25 !important;
+        padding-bottom: 0 !important;
+      }
+
+      .toolbar,
+      .notice-bar,
+      .dice-dock,
+      .modal-backdrop,
+      .no-print {
+        display: none !important;
+      }
+
+      .sheet-container {
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        gap: 8px !important;
+      }
+
+      .panel-frame {
+        background: #FFFFFF !important;
+        border: 1px solid #222222 !important;
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+
+      .sec-bar {
+        background: #EFEFEF !important;
+        border-bottom: 1px solid #222222 !important;
+        padding: 4px 8px !important;
+      }
+
+      .sec-title {
+        color: #111111 !important;
+        font-size: 11pt !important;
+      }
+
+      .sec-title::before {
+        background: #111111 !important;
+      }
+
+      .panel-body {
+        padding: 8px !important;
+      }
+
+      .sub-box,
+      .attr-box,
+      .skill-item,
+      .power-row,
+      .weapon-row,
+      .bond-row,
+      .prof-grid,
+      .prot-grid {
+        background: #FAFAFA !important;
+        border: 1px solid #777777 !important;
+      }
+
+      .input-box,
+      .textarea-box,
+      .select-box,
+      .attr-input,
+      .counter-input,
+      .skill-prof-input {
+        background: #FFFFFF !important;
+        color: #111111 !important;
+        border: 1px solid #888888 !important;
+      }
+
+      .grid-vitals {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 8px !important;
+      }
+
+      .grid-attrs {
+        grid-template-columns: repeat(5, 1fr) !important;
+        gap: 6px !important;
+      }
+
+      .skills-grid {
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 4px !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==========================================================================
+       BARRA SUPERIOR FIXA (.toolbar)
+       ========================================================================== -->
+  <header class="toolbar">
+    <div class="toolbar-brand">
+      <div class="toolbar-title">LOST PARADISE // FICHA DO SOBREVIVENTE</div>
+      <span id="save-badge" class="save-badge">SALVO</span>
+    </div>
+
+    <div class="toolbar-actions">
+      <button type="button" class="btn" onclick="exportJSON()">EXPORTAR JSON</button>
+      <button type="button" class="btn" onclick="document.getElementById('import-json-input').click()">IMPORTAR JSON</button>
+      <input type="file" id="import-json-input" accept=".json,application/json" style="display: none;" onchange="importJSON(event)" />
+      <button type="button" class="btn" onclick="window.print()">IMPRIMIR / PDF</button>
+      <button type="button" class="btn" onclick="openRulesModal()">REGRAS</button>
+      <button type="button" class="btn" onclick="openDiceModal()">DADOS</button>
+      <button type="button" class="btn" onclick="openColorModal()">COR</button>
+      <button type="button" id="theme-toggle-btn" class="btn" onclick="toggleTheme()">MODO PAPEL</button>
+      <button type="button" class="btn btn-critical" onclick="requestClearSheet()">LIMPAR FICHA</button>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       BARRA DE AVISO / CONFIRMAÇÃO INLINE (.notice-bar)
+       ========================================================================== -->
+  <div id="notice-bar" class="notice-bar" role="status" aria-live="polite">
+    <span id="notice-text" class="notice-text"></span>
+    <div id="notice-actions" class="notice-actions"></div>
+  </div>
+
+  <!-- ==========================================================================
+       CORPO PRINCIPAL DA FICHA DO SOBREVIVENTE
+       ========================================================================== -->
+  <main class="sheet-container">
+
+    <!-- 1. IDENTIFICAÇÃO -->
+    <section class="panel-frame">
+      <div class="sec-bar">
+        <h2 class="sec-title">IDENTIFICAÇÃO</h2>
+        <span class="sec-meta">REGISTRO DE SOBREVIVENTE</span>
+      </div>
+      <div class="panel-body">
+        <div class="grid-id-top">
+          <div class="field-group">
+            <label class="field-label" for="id-nome">Nome</label>
+            <input id="id-nome" type="text" class="input-box" data-path="identificacao.nome" placeholder="Nome do personagem" />
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="id-jogador">Jogador</label>
+            <input id="id-jogador" type="text" class="input-box" data-path="identificacao.jogador" placeholder="Nome do jogador" />
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="id-antecedente">Antecedente</label>
+            <input id="id-antecedente" type="text" class="input-box" data-path="identificacao.antecedente" placeholder="Ex.: Paramédico, Mecânico..." />
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="id-classe">Classe / Caminho</label>
+            <input id="id-classe" type="text" list="classes-list" class="input-box" data-path="identificacao.classe" placeholder="Vanguarda, Dissonante..." />
+            <datalist id="classes-list">
+              <option value="Vanguarda"></option>
+              <option value="Dissonante"></option>
+              <option value="Astuto"></option>
+            </datalist>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="id-nivel">Nível</label>
+            <input id="id-nivel" type="number" min="0" max="99" class="input-box input-num" data-path="identificacao.nivel" />
+          </div>
+        </div>
+
+        <div class="grid-id-bottom">
+          <div class="field-group">
+            <label class="field-label" for="id-antes">Quem eu era antes do fim</label>
+            <textarea id="id-antes" class="textarea-box" rows="2" data-path="identificacao.antesDoFim" placeholder="Passado, ofício e vida antes da ruptura..."></textarea>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="id-proteger">O que ainda quero proteger</label>
+            <textarea id="id-proteger" class="textarea-box" rows="2" data-path="identificacao.queroProteger" placeholder="Pessoas, promessas ou princípios que mantêm você vivo..."></textarea>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. ATRIBUTOS -->
+    <section class="panel-frame">
+      <div class="sec-bar">
+        <h2 class="sec-title">ATRIBUTOS</h2>
+        <span class="sec-meta no-print">CLIQUE NO BOTÃO PARA ROLAR Xd6 NO DOCK</span>
+      </div>
+      <div class="panel-body">
+        <div class="grid-attrs">
+          <div class="attr-box">
+            <label class="attr-name" for="attr-forca">FORÇA</label>
+            <input id="attr-forca" type="number" min="0" max="20" class="attr-input" data-path="atributos.forca" />
+            <button type="button" id="btn-roll-forca" class="btn btn-sm no-print" onclick="rollAttribute('forca', 'Força')">ROLAR 1d6</button>
+          </div>
+          <div class="attr-box">
+            <label class="attr-name" for="attr-cognicao">COGNIÇÃO</label>
+            <input id="attr-cognicao" type="number" min="0" max="20" class="attr-input" data-path="atributos.cognicao" />
+            <button type="button" id="btn-roll-cognicao" class="btn btn-sm no-print" onclick="rollAttribute('cognicao', 'Cognição')">ROLAR 1d6</button>
+          </div>
+          <div class="attr-box">
+            <label class="attr-name" for="attr-agilidade">AGILIDADE</label>
+            <input id="attr-agilidade" type="number" min="0" max="20" class="attr-input" data-path="atributos.agilidade" />
+            <button type="button" id="btn-roll-agilidade" class="btn btn-sm no-print" onclick="rollAttribute('agilidade', 'Agilidade')">ROLAR 1d6</button>
+          </div>
+          <div class="attr-box">
+            <label class="attr-name" for="attr-vigor">VIGOR</label>
+            <input id="attr-vigor" type="number" min="0" max="20" class="attr-input" data-path="atributos.vigor" />
+            <button type="button" id="btn-roll-vigor" class="btn btn-sm no-print" onclick="rollAttribute('vigor', 'Vigor')">ROLAR 1d6</button>
+          </div>
+          <div class="attr-box">
+            <label class="attr-name" for="attr-mente">MENTE</label>
+            <input id="attr-mente" type="number" min="0" max="20" class="attr-input" data-path="atributos.mente" />
+            <button type="button" id="btn-roll-mente" class="btn btn-sm no-print" onclick="rollAttribute('mente', 'Mente')">ROLAR 1d6</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. RECURSOS, ROTINA E DEFESAS -->
+    <div class="grid-vitals">
+      <!-- 3A. RECURSOS -->
+      <section class="panel-frame">
+        <div class="sec-bar">
+          <h2 class="sec-title">RECURSOS</h2>
+        </div>
+        <div class="panel-body">
+          <!-- Integridade -->
+          <div class="sub-box">
+            <div class="sub-box-head">
+              <span class="field-label">Integridade</span>
+              <span id="badge-integridade" class="status-badge is-ok">SAUDÁVEL</span>
+            </div>
+            <div class="counter-row">
+              <button type="button" class="step-btn no-print" onclick="stepValue('recursos.integridadeAtual', -1)">-</button>
+              <input type="number" min="0" class="counter-input" data-path="recursos.integridadeAtual" aria-label="Integridade Atual" />
+              <span style="font-family: 'IBM Plex Mono', monospace; font-weight: 700;">/</span>
+              <input type="number" min="0" class="counter-input" data-path="recursos.integridadeMax" aria-label="Integridade Máxima" />
+              <button type="button" class="step-btn no-print" onclick="stepValue('recursos.integridadeAtual', 1)">+</button>
+            </div>
+            <div class="helper-note">Ferido abaixo da metade · Morrendo em 0</div>
+          </div>
+
+          <!-- Pulso -->
+          <div class="sub-box">
+            <div class="sub-box-head">
+              <span class="field-label">Pulso</span>
+              <span id="badge-pulso" class="status-badge is-ok">ATIVO</span>
+            </div>
+            <div class="counter-row">
+              <button type="button" class="step-btn no-print" onclick="stepValue('recursos.pulsoAtual', -1)">-</button>
+              <input type="number" min="0" class="counter-input" data-path="recursos.pulsoAtual" aria-label="Pulso Atual" />
+              <span style="font-family: 'IBM Plex Mono', monospace; font-weight: 700;">/</span>
+              <input type="number" min="0" class="counter-input" data-path="recursos.pulsoMax" aria-label="Pulso Máximo" />
+              <button type="button" class="step-btn no-print" onclick="stepValue('recursos.pulsoAtual', 1)">+</button>
+            </div>
+            <div class="helper-note">Colapso em 0</div>
+          </div>
+
+          <!-- Reação da Rodada & RD -->
+          <div class="sub-box" style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+            <label class="check-label">
+              <input type="checkbox" class="check-box is-olive" data-path="recursos.reacaoDisponivel" />
+              <span><strong>Reação</strong> disponível</span>
+            </label>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <label class="field-label" for="res-rd">RD</label>
+              <input id="res-rd" type="number" min="0" class="counter-input" style="width: 46px;" data-path="recursos.rd" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3B. ROTINA -->
+      <section class="panel-frame">
+        <div class="sec-bar">
+          <h2 class="sec-title">ROTINA</h2>
+        </div>
+        <div class="panel-body">
+          <!-- Âncoras de hoje -->
+          <div class="sub-box">
+            <div class="sub-box-head">
+              <span class="field-label">Âncoras de hoje</span>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 12px;">
+              <label class="check-label">
+                <input type="checkbox" class="check-box is-olive" data-path="rotina.ancoras.dormir" />
+                <span>Dormir</span>
+              </label>
+              <label class="check-label">
+                <input type="checkbox" class="check-box is-olive" data-path="rotina.ancoras.comer" />
+                <span>Comer</span>
+              </label>
+              <label class="check-label">
+                <input type="checkbox" class="check-box is-olive" data-path="rotina.ancoras.vinculo" />
+                <span>Vínculo</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Estado -->
+          <div class="sub-box">
+            <div class="sub-box-head">
+              <span class="field-label">Estado</span>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+              <label class="check-label">
+                <input type="checkbox" class="check-box is-olive estado-check" value="Firme" onclick="setRotinaEstado('Firme')" />
+                <span>Firme</span>
+              </label>
+              <label class="check-label">
+                <input type="checkbox" class="check-box estado-check" value="Estável" onclick="setRotinaEstado('Estável')" />
+                <span>Estável</span>
+              </label>
+              <label class="check-label">
+                <input type="checkbox" class="check-box is-critical estado-check" value="Desgaste" onclick="setRotinaEstado('Desgaste')" />
+                <span>Desgaste</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Marcadores de Desgaste -->
+          <div class="sub-box">
+            <div class="sub-box-head">
+              <span class="field-label">Marcadores de Desgaste</span>
+              <span id="badge-desgaste" class="status-badge">0/3</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <input type="checkbox" class="check-box is-critical" style="width: 20px; height: 20px;" data-path="rotina.desgaste.0" aria-label="Desgaste 1" />
+              <input type="checkbox" class="check-box is-critical" style="width: 20px; height: 20px;" data-path="rotina.desgaste.1" aria-label="Desgaste 2" />
+              <input type="checkbox" class="check-box is-critical" style="width: 20px; height: 20px;" data-path="rotina.desgaste.2" aria-label="Desgaste 3" />
+              <span class="helper-note" style="margin: 0;">(3 = Esgotado)</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3C. DEFESAS -->
+      <section class="panel-frame">
+        <div class="sec-bar">
+          <h2 class="sec-title">DEFESAS</h2>
+        </div>
+        <div class="panel-body">
+          <!-- Esquiva -->
+          <div class="sub-box">
+            <div class="sub-box-head">
+              <div>
+                <span class="field-label" style="color: var(--text-main);">Esquiva</span>
+                <span class="helper-note" style="display: block; margin-top: 1px;">Agilidade + Reflexos</span>
+              </div>
+              <button type="button" class="btn btn-sm no-print" onclick="rollDefense('esquiva', 'Esquiva')">ROLAR</button>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 6px;">
+              <div style="display: flex; align-items: center; gap: 4px;">
+                <input id="def-esquiva-dados" type="number" min="0" max="30" class="counter-input" data-path="defesas.esquivaDados" oninput="markDefenseManual('esquiva')" />
+                <span style="font-family: 'IBM Plex Mono', monospace; font-weight: 700;">d6</span>
+                <button type="button" id="resync-esquiva-btn" class="btn btn-sm no-print" style="display: none;" onclick="resyncDefense('esquiva')" title="Sincronizar automaticamente">AUTO</button>
+              </div>
+              <div style="display: flex; align-items: center; gap: 5px;">
+                <label class="field-label" for="def-esquiva-passiva">Passiva</label>
+                <input id="def-esquiva-passiva" type="number" min="0" max="99" class="counter-input" data-path="defesas.esquivaPassiva" oninput="markDefenseManual('esquiva')" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Bloqueio -->
+          <div class="sub-box">
+            <div class="sub-box-head">
+              <div>
+                <span class="field-label" style="color: var(--text-main);">Bloqueio</span>
+                <span class="helper-note" style="display: block; margin-top: 1px;">Vigor + Fortitude</span>
+              </div>
+              <button type="button" class="btn btn-sm no-print" onclick="rollDefense('bloqueio', 'Bloqueio')">ROLAR</button>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 6px;">
+              <div style="display: flex; align-items: center; gap: 4px;">
+                <input id="def-bloqueio-dados" type="number" min="0" max="30" class="counter-input" data-path="defesas.bloqueioDados" oninput="markDefenseManual('bloqueio')" />
+                <span style="font-family: 'IBM Plex Mono', monospace; font-weight: 700;">d6</span>
+                <button type="button" id="resync-bloqueio-btn" class="btn btn-sm no-print" style="display: none;" onclick="resyncDefense('bloqueio')" title="Sincronizar automaticamente">AUTO</button>
+              </div>
+              <div style="display: flex; align-items: center; gap: 5px;">
+                <label class="field-label" for="def-bloqueio-passiva">Passiva</label>
+                <input id="def-bloqueio-passiva" type="number" min="0" max="99" class="counter-input" data-path="defesas.bloqueioPassiva" oninput="markDefenseManual('bloqueio')" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- 4. PERÍCIAS (GRADE ÚNICA SEM DIVISÕES DE CATEGORIA E SEM NOMES DE ATRIBUTO) -->
+    <section class="panel-frame">
+      <div class="sec-bar">
+        <h2 class="sec-title">PERÍCIAS</h2>
+        <span class="sec-meta">MARQUE AS TREINADAS [2] · CLIQUE EM Xd6 PARA ROLAR</span>
+      </div>
+      <div class="panel-body">
+        <div id="skills-grid" class="skills-grid"></div>
+      </div>
+    </section>
+
+    <!-- 5. PRIVILÉGIO DO ANTECEDENTE & ALTERAÇÃO (SÓ DISSONANTE) -->
+    <div class="grid-two-col">
+      <section class="panel-frame" style="display: flex; flex-direction: column;">
+        <div class="sec-bar">
+          <h2 class="sec-title">PRIVILÉGIO DO ANTECEDENTE</h2>
+        </div>
+        <div class="panel-body" style="flex: 1; display: flex; flex-direction: column;">
+          <textarea class="textarea-box" style="flex: 1; min-height: 120px;" data-path="privilegioAntecedente" placeholder="Benefício narrativo, contatos ou vantagem prática do seu antecedente..."></textarea>
+        </div>
+      </section>
+
+      <section id="panel-dissonante" class="panel-frame">
+        <div class="sec-bar">
+          <h2 class="sec-title">ALTERAÇÃO (SÓ DISSONANTE)</h2>
+          <span id="badge-dissonante" class="status-badge" style="display: none;">DISSONANTE ATIVO</span>
+        </div>
+        <div class="panel-body" style="display: flex; flex-direction: column; gap: 8px;">
+          <div class="field-group">
+            <label class="field-label" for="diss-alteracao">Alteração</label>
+            <input id="diss-alteracao" type="text" class="input-box" data-path="alteracao.alteracao" placeholder="Nome ou natureza da alteração..." />
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="diss-forma">Forma</label>
+            <input id="diss-forma" type="text" class="input-box" data-path="alteracao.forma" placeholder="Como se manifesta no corpo ou ambiente..." />
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="diss-preco">Preço</label>
+            <input id="diss-preco" type="text" class="input-box" data-path="alteracao.preco" placeholder="Custo em Pulso, Desgaste ou efeito colateral..." />
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- 6. PODERES DE CLASSE E PODERES GERAIS -->
+    <section class="panel-frame">
+      <div class="sec-bar">
+        <h2 class="sec-title">PODERES DE CLASSE E PODERES GERAIS</h2>
+        <button type="button" class="btn btn-sm no-print" onclick="addPowerRow()">+ ADICIONAR PODER</button>
+      </div>
+      <div class="panel-body">
+        <div id="powers-list" class="dynamic-list"></div>
+      </div>
+    </section>
+
+    <!-- 7. PROFICIÊNCIAS, ARMAS, PROTEÇÃO E EQUIPAMENTO -->
+    <section class="panel-frame">
+      <div class="sec-bar">
+        <h2 class="sec-title">COMBATE, PROTEÇÃO E SUPRIMENTOS</h2>
+        <button type="button" class="btn btn-sm no-print" onclick="addWeaponRow()">+ ADICIONAR ARMA</button>
+      </div>
+      <div class="panel-body">
+        <!-- Proficiências -->
+        <div class="field-label" style="margin-bottom: 5px;">Proficiências</div>
+        <div class="prof-grid">
+          <label class="check-label">
+            <input type="checkbox" class="check-box" data-path="proficiencias.armasSimples" />
+            <span>Armas Simples</span>
+          </label>
+          <label class="check-label">
+            <input type="checkbox" class="check-box" data-path="proficiencias.armasMarciais" />
+            <span>Armas Marciais</span>
+          </label>
+          <label class="check-label">
+            <input type="checkbox" class="check-box" data-path="proficiencias.fogoLeve" />
+            <span>Fogo Leve</span>
+          </label>
+          <label class="check-label">
+            <input type="checkbox" class="check-box" data-path="proficiencias.fogoPesado" />
+            <span>Fogo Pesado</span>
+          </label>
+        </div>
+
+        <!-- Armas -->
+        <div class="field-label" style="margin-bottom: 5px;">Armas</div>
+        <div id="weapons-list" class="dynamic-list"></div>
+
+        <!-- Proteção -->
+        <div class="prot-grid">
+          <div class="field-group">
+            <label class="field-label" for="prot-tipo">Proteção (Tipo)</label>
+            <select id="prot-tipo" class="select-box" data-path="protecao.tipo">
+              <option value="">Nenhuma / Selecione...</option>
+              <option value="Leve">Leve</option>
+              <option value="Média">Média</option>
+              <option value="Pesada">Pesada</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="prot-item">Item de Proteção</label>
+            <input id="prot-item" type="text" class="input-box" data-path="protecao.item" placeholder="Ex.: Jaqueta reforçada, colete tático..." />
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="prot-rd">RD</label>
+            <input id="prot-rd" type="number" min="0" class="input-box input-num" data-path="protecao.rd" />
+          </div>
+        </div>
+
+        <!-- Equipamento e Suprimentos -->
+        <div class="field-label" style="margin-bottom: 5px;">Equipamento e Suprimentos</div>
+        <div class="supplies-grid">
+          <div class="sub-box" style="margin: 0;">
+            <div class="field-label" style="margin-bottom: 6px;">Caixas de munição</div>
+            <div class="counter-row">
+              <button type="button" class="step-btn no-print" onclick="stepValue('equipamento.municao', -1)">-</button>
+              <input type="number" min="0" class="counter-input" data-path="equipamento.municao" aria-label="Caixas de munição" />
+              <button type="button" class="step-btn no-print" onclick="stepValue('equipamento.municao', 1)">+</button>
+            </div>
+          </div>
+
+          <div class="sub-box" style="margin: 0;">
+            <div class="field-label" style="margin-bottom: 6px;">Kits Primeiros Socorros</div>
+            <div class="counter-row">
+              <button type="button" class="step-btn no-print" onclick="stepValue('equipamento.kitsPrimeirosSocorros', -1)">-</button>
+              <input type="number" min="0" class="counter-input" data-path="equipamento.kitsPrimeirosSocorros" aria-label="Kits Primeiros Socorros" />
+              <button type="button" class="step-btn no-print" onclick="stepValue('equipamento.kitsPrimeirosSocorros', 1)">+</button>
+            </div>
+          </div>
+
+          <div class="sub-box" style="margin: 0;">
+            <div class="field-label" style="margin-bottom: 6px;">Kit Cirúrgico</div>
+            <div class="counter-row">
+              <button type="button" class="step-btn no-print" onclick="stepValue('equipamento.kitCirurgico', -1)">-</button>
+              <input type="number" min="0" class="counter-input" data-path="equipamento.kitCirurgico" aria-label="Kit Cirúrgico" />
+              <button type="button" class="step-btn no-print" onclick="stepValue('equipamento.kitCirurgico', 1)">+</button>
+            </div>
+          </div>
+
+          <div class="sub-box" style="margin: 0;">
+            <div class="field-label" style="margin-bottom: 6px;">Rações</div>
+            <div class="counter-row">
+              <button type="button" class="step-btn no-print" onclick="stepValue('equipamento.racoes', -1)">-</button>
+              <input type="number" min="0" class="counter-input" data-path="equipamento.racoes" aria-label="Rações" />
+              <button type="button" class="step-btn no-print" onclick="stepValue('equipamento.racoes', 1)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="equip-outros">Outros Itens e Mochila</label>
+          <textarea id="equip-outros" class="textarea-box" rows="2" data-path="equipamento.outros" placeholder="Lanterna, rádio, ferramentas, cantil, corda, documentos..."></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. VÍNCULOS E ANOTAÇÕES -->
+    <section class="panel-frame">
+      <div class="sec-bar">
+        <h2 class="sec-title">VÍNCULOS E ANOTAÇÕES</h2>
+        <button type="button" class="btn btn-sm no-print" onclick="addBondRow()">+ ADICIONAR VÍNCULO</button>
+      </div>
+      <div class="panel-body">
+        <div id="bonds-list" class="dynamic-list" style="margin-bottom: 12px;"></div>
+
+        <div class="field-group">
+          <label class="field-label" for="field-anotacoes">Anotações de Campo</label>
+          <textarea id="field-anotacoes" class="textarea-box" rows="3" data-path="anotacoes" placeholder="Registros de sessão, abrigos, pistas, ferimentos e anotações gerais..."></textarea>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==========================================================================
+       DOCK INFERIOR FIXO DE ROLAGEM DE DADOS (.dice-dock)
+       ========================================================================== -->
+  <footer class="dice-dock no-print">
+    <div class="dock-controls">
+      <div class="pool-presets" id="pool-presets">
+        <button type="button" class="pool-btn" data-pool="1" onclick="selectPool(1)">1d6</button>
+        <button type="button" class="pool-btn" data-pool="2" onclick="selectPool(2)">2d6</button>
+        <button type="button" class="pool-btn is-active" data-pool="3" onclick="selectPool(3)">3d6</button>
+        <button type="button" class="pool-btn" data-pool="4" onclick="selectPool(4)">4d6</button>
+        <button type="button" class="pool-btn" data-pool="5" onclick="selectPool(5)">5d6</button>
+        <button type="button" class="pool-btn" data-pool="6" onclick="selectPool(6)">6d6</button>
+        <button type="button" class="pool-btn" data-pool="7" onclick="selectPool(7)">7d6</button>
+        <button type="button" class="pool-btn" data-pool="8" onclick="selectPool(8)">8d6</button>
+        <button type="button" class="pool-btn" data-pool="9" onclick="selectPool(9)">9d6</button>
+        <button type="button" class="pool-btn" data-pool="10" onclick="selectPool(10)">10d6</button>
+      </div>
+      <button type="button" class="btn btn-primary" onclick="rollPool(currentPool, currentRollLabel)">ROLAR DADOS</button>
+    </div>
+
+    <div class="dock-results">
+      <span id="dock-context" class="dock-context">PARADA MANUAL (3d6)</span>
+      <div id="dice-chips-row" class="dice-chips-row">
+        <span class="die-chip">-</span>
+        <span class="die-chip">-</span>
+        <span class="die-chip">-</span>
+      </div>
+      <div id="dock-readout" class="dock-readout">
+        <span>SUCESSOS: 0 (0 LIMPO + 0 ESFORÇO)</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==========================================================================
+       MODAL DE REGRAS RÁPIDAS (CONSULTA DO SISTEMA LOST PARADISE)
+       ========================================================================== -->
+  <div id="rules-modal" class="modal-backdrop no-print" onclick="if(event.target === this) closeRulesModal()">
+    <div class="modal-box">
+      <div class="sec-bar">
+        <h3 class="sec-title">REFERÊNCIA RÁPIDA // LOST PARADISE</h3>
+        <button type="button" class="btn btn-sm" onclick="closeRulesModal()">FECHAR [ESC]</button>
+      </div>
+      <div class="panel-body">
+        <div class="rules-grid">
+          <div class="rule-card">
+            <h4>Parada de Dados &amp; Sucessos</h4>
+            <ul>
+              <li><strong>Parada:</strong> Atributo (em d6) + <strong>2d6</strong> se a perícia for treinada.</li>
+              <li><strong>6 (Limpo):</strong> 1 Sucesso Limpo.</li>
+              <li><strong>5 (Esforço):</strong> 1 Sucesso com Esforço.</li>
+              <li><strong>Par de 4 ou Par de 3:</strong> Cada par de 4 ou par de 3 gera 1 Sucesso com Esforço.</li>
+              <li><strong>1:</strong> Falha isolada / complicação em rolagens críticas.</li>
+              <li><strong>CRIT 2 / CRIT 3:</strong> Dois 6 geram CRIT 2; três ou mais 6 geram CRIT 3.</li>
+            </ul>
+          </div>
+
+          <div class="rule-card">
+            <h4>Integridade, Pulso &amp; Desgaste</h4>
+            <ul>
+              <li><strong>Ferido:</strong> Integridade atual abaixo da metade do máximo.</li>
+              <li><strong>Morrendo:</strong> Integridade chega a 0.</li>
+              <li><strong>Colapso:</strong> Pulso chega a 0.</li>
+              <li><strong>Esgotado:</strong> Ao marcar os 3 pontos de Desgaste.</li>
+            </ul>
+          </div>
+
+          <div class="rule-card">
+            <h4>Defesas &amp; Reação</h4>
+            <ul>
+              <li><strong>Esquiva:</strong> Agilidade + Reflexos (Passiva = metade arredondada para baixo).</li>
+              <li><strong>Bloqueio:</strong> Vigor + Fortitude (Passiva = metade arredondada para baixo).</li>
+              <li><strong>Reação:</strong> 1 reação disponível por rodada.</li>
+            </ul>
+          </div>
+
+          <div class="rule-card">
+            <h4>Rotina &amp; Âncoras</h4>
+            <ul>
+              <li><strong>Âncoras:</strong> Dormir, Comer e Vínculo sustentam a estabilidade diária.</li>
+              <li><strong>Estados:</strong> Firme, Estável ou Desgaste.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: COR DA FICHA
+       ========================================================================== -->
+  <div id="color-modal" class="modal-backdrop no-print" onclick="if(event.target === this) closeColorModal()">
+    <div class="modal-box" style="max-width: 420px;">
+      <div class="sec-bar">
+        <h3 class="sec-title">COR DA FICHA</h3>
+        <button type="button" class="btn btn-sm" onclick="closeColorModal()">FECHAR [ESC]</button>
+      </div>
+      <div class="panel-body">
+        <div id="color-swatches" class="color-swatches"></div>
+        <div class="color-custom">
+          <label class="field-label" for="accent-custom">Cor livre</label>
+          <input type="color" id="accent-custom" value="#e07a16" />
+          <button type="button" class="btn btn-sm" onclick="setAccent('')">VOLTAR AO PADRÃO</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: DADOS CUSTOMIZADOS (3D)
+       ========================================================================== -->
+  <div id="dice-modal" class="modal-backdrop no-print" onclick="if(event.target === this) closeDiceModal()">
+    <div class="modal-box" style="max-width: 760px;">
+      <div class="sec-bar">
+        <h3 class="sec-title">DADOS CUSTOMIZADOS</h3>
+        <button type="button" class="btn btn-sm" onclick="closeDiceModal()">FECHAR [ESC]</button>
+      </div>
+      <div class="panel-body">
+        <div class="dice-controls">
+          <div class="field-group">
+            <span class="field-label">Dado</span>
+            <div class="pool-presets" id="die-type-btns">
+              <button type="button" class="pool-btn" data-die="4" onclick="selectCustomDie(4)">d4</button>
+              <button type="button" class="pool-btn is-active" data-die="6" onclick="selectCustomDie(6)">d6</button>
+              <button type="button" class="pool-btn" data-die="12" onclick="selectCustomDie(12)">d12</button>
+              <button type="button" class="pool-btn" data-die="20" onclick="selectCustomDie(20)">d20</button>
+            </div>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="dice-qty">Quantidade</label>
+            <input type="number" id="dice-qty" class="input-box input-num" min="1" max="10" value="1" />
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="dice-mod">Modificador</label>
+            <input type="number" id="dice-mod" class="input-box input-num" value="0" />
+          </div>
+          <button type="button" class="btn btn-primary" onclick="rollCustomDice()">ROLAR</button>
+        </div>
+
+        <div id="dice-scene" class="dice-scene"></div>
+
+        <div class="dice-result" aria-live="polite">
+          <div id="custom-dice-chips" class="dice-chips-row"></div>
+          <div id="custom-dice-readout" class="dock-readout"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       SCRIPT DA APLICAÇÃO: ESTADO, AUTO-SAVE, DADOS E JSON TELA DO MESTRE
+       ========================================================================== -->
+  <script>
+    const STORAGE_KEY = 'ficha_sobrevivente_lost_paradise_v1';
+
+    // Lista das 20 perícias na ordem exata solicitada (sem categorias e sem atributos visíveis)
+    const SKILLS_CONFIG = [
+      { key: 'luta', label: 'Luta', attr: 'forca' },
+      { key: 'atletismo', label: 'Atletismo', attr: 'forca' },
+      { key: 'fortitude', label: 'Fortitude', attr: 'vigor' },
+      { key: 'tolerancia', label: 'Tolerância', attr: 'vigor' },
+      { key: 'pontaria', label: 'Pontaria', attr: 'agilidade' },
+      { key: 'furtividade', label: 'Furtividade', attr: 'agilidade' },
+      { key: 'reflexos', label: 'Reflexos', attr: 'agilidade' },
+      { key: 'prestidigitacao', label: 'Prestidigitação', attr: 'agilidade' },
+      { key: 'pilotagem', label: 'Pilotagem', attr: 'agilidade' },
+      { key: 'tecnologia', label: 'Tecnologia', attr: 'cognicao' },
+      { key: 'medicina', label: 'Medicina', attr: 'cognicao' },
+      { key: 'biomedicina', label: 'Bio-medicina', attr: 'cognicao' },
+      { key: 'investigacao', label: 'Investigação', attr: 'cognicao' },
+      { key: 'tatica', label: 'Tática', attr: 'cognicao' },
+      { key: 'profissao', label: 'Profissão', attr: 'cognicao', isProfession: true },
+      { key: 'vontade', label: 'Vontade', attr: 'mente' },
+      { key: 'sobrevivencia', label: 'Sobrevivência', attr: 'mente' },
+      { key: 'influencia', label: 'Influência', attr: 'mente' },
+      { key: 'intuicao', label: 'Intuição', attr: 'mente' },
+      { key: 'percepcao', label: 'Percepção', attr: 'mente' }
+    ];
+
+    // Estado padrão 100% compatível com parseImportedSurvivor() da Tela do Mestre
+    function getDefaultState() {
+      return {
+        theme: 'terminal',
+        accent: '',
+        identificacao: {
+          nome: '',
+          jogador: '',
+          nivel: 1,
+          antesDoFim: '',
+          queroProteger: '',
+          antecedente: '',
+          classe: ''
+        },
+        atributos: {
+          forca: 1,
+          cognicao: 1,
+          agilidade: 1,
+          vigor: 1,
+          mente: 1
+        },
+        recursos: {
+          integridadeAtual: 10,
+          integridadeMax: 10,
+          pulsoAtual: 6,
+          pulsoMax: 6,
+          reacaoDisponivel: true,
+          rd: 0
+        },
+        rotina: {
+          ancoras: {
+            dormir: false,
+            comer: false,
+            vinculo: false
+          },
+          estado: 'Firme',
+          desgaste: [false, false, false]
+        },
+        defesas: {
+          esquivaDados: 1,
+          esquivaPassiva: 0,
+          bloqueioDados: 1,
+          bloqueioPassiva: 0
+        },
+        pericias: {
+          luta: false,
+          atletismo: false,
+          fortitude: false,
+          tolerancia: false,
+          pontaria: false,
+          furtividade: false,
+          reflexos: false,
+          prestidigitacao: false,
+          pilotagem: false,
+          tecnologia: false,
+          medicina: false,
+          biomedicina: false,
+          investigacao: false,
+          tatica: false,
+          profissao: false,
+          profissaoNome: '',
+          vontade: false,
+          sobrevivencia: false,
+          influencia: false,
+          intuicao: false,
+          percepcao: false
+        },
+        privilegioAntecedente: '',
+        alteracao: {
+          alteracao: '',
+          forma: '',
+          preco: ''
+        },
+        poderes: [
+          { nivel: '', poder: '', custo: '', efeito: '' },
+          { nivel: '', poder: '', custo: '', efeito: '' },
+          { nivel: '', poder: '', custo: '', efeito: '' }
+        ],
+        proficiencias: {
+          armasSimples: false,
+          armasMarciais: false,
+          fogoLeve: false,
+          fogoPesado: false
+        },
+        armas: [
+          { arma: '', dano: '', crit: '', alcance: '', efeito: '', modificacao: '' },
+          { arma: '', dano: '', crit: '', alcance: '', efeito: '', modificacao: '' }
+        ],
+        protecao: {
+          tipo: '',
+          item: '',
+          rd: 0
+        },
+        equipamento: {
+          municao: 0,
+          kitsPrimeirosSocorros: 0,
+          kitCirurgico: 0,
+          racoes: 0,
+          outros: ''
+        },
+        vinculos: [
+          { alvo: '', nota: '' },
+          { alvo: '', nota: '' }
+        ],
+        anotacoes: ''
+      };
+    }
+
+    let state = getDefaultState();
+    let defenseManualOverride = { esquiva: false, bloqueio: false };
+    let currentPool = 3;
+    let currentRollLabel = 'PARADA MANUAL';
+    let saveTimer = null;
+    let noticeTimer = null;
+
+    // ==========================================================================
+    // UTILITÁRIOS DE ESTADO, MESCLAGEM E AUTO-SAVE
+    // ==========================================================================
+    function deepMerge(target, source) {
+      if (!source || typeof source !== 'object') return target;
+      const out = Array.isArray(target) ? [...target] : { ...target };
+      for (const key of Object.keys(source)) {
+        if (source[key] !== null && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+          out[key] = deepMerge(target[key] || {}, source[key]);
+        } else {
+          out[key] = source[key];
+        }
+      }
+      return out;
+    }
+
+    function getByPath(obj, path) {
+      return path.split('.').reduce((acc, k) => (acc !== undefined && acc !== null ? acc[k] : undefined), obj);
+    }
+
+    function setByPath(obj, path, value) {
+      const parts = path.split('.');
+      let cur = obj;
+      for (let i = 0; i < parts.length - 1; i++) {
+        cur = cur[parts[i]];
+      }
+      cur[parts[parts.length - 1]] = value;
+    }
+
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function saveToStorage() {
+      const badge = document.getElementById('save-badge');
+      if (badge) badge.textContent = 'SALVANDO...';
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+          if (badge) badge.textContent = 'SALVO';
+        } catch (err) {
+          console.error('Erro ao salvar no localStorage:', err);
+          if (badge) badge.textContent = 'ERRO AO SALVAR';
+        }
+      }, 150);
+    }
+
+    function loadFromStorage() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          state = normalizeImportedData(parsed);
+        }
+      } catch (err) {
+        console.error('Erro ao ler localStorage:', err);
+        state = getDefaultState();
+      }
+    }
+
+    // Normaliza tanto o JSON padrão quanto o formato legado (fields/checks/radios)
+    function normalizeImportedData(raw) {
+      const base = getDefaultState();
+      if (!raw || typeof raw !== 'object') return base;
+
+      // Suporte ao formato antigo { fields, checks, radios }
+      if (raw.fields || raw.checks || raw.radios) {
+        const f = raw.fields || {};
+        const c = raw.checks || {};
+        const r = raw.radios || {};
+
+        base.theme = raw.theme === 'papel' ? 'papel' : 'terminal';
+        base.identificacao.nome = f.nome || f['id-nome'] || '';
+        base.identificacao.jogador = f.jogador || f['id-jogador'] || '';
+        base.identificacao.nivel = parseInt(f.nivel || f['id-nivel'], 10) || 1;
+        base.identificacao.antecedente = f.antecedente || f['id-antecedente'] || '';
+        base.identificacao.classe = f.classe || f['id-classe'] || '';
+        base.identificacao.antesDoFim = f.antesDoFim || f['id-antes'] || '';
+        base.identificacao.queroProteger = f.queroProteger || f['id-proteger'] || '';
+
+        base.atributos.forca = parseInt(f.forca || f['attr-forca'], 10) || 1;
+        base.atributos.cognicao = parseInt(f.cognicao || f['attr-cognicao'], 10) || 1;
+        base.atributos.agilidade = parseInt(f.agilidade || f['attr-agilidade'], 10) || 1;
+        base.atributos.vigor = parseInt(f.vigor || f['attr-vigor'], 10) || 1;
+        base.atributos.mente = parseInt(f.mente || f['attr-mente'], 10) || 1;
+
+        base.recursos.integridadeAtual = parseInt(f.integridadeAtual, 10) || 10;
+        base.recursos.integridadeMax = parseInt(f.integridadeMax, 10) || 10;
+        base.recursos.pulsoAtual = parseInt(f.pulsoAtual, 10) || 6;
+        base.recursos.pulsoMax = parseInt(f.pulsoMax, 10) || 6;
+        base.recursos.reacaoDisponivel = c.reacaoDisponivel !== undefined ? Boolean(c.reacaoDisponivel) : true;
+        base.recursos.rd = parseInt(f.rd, 10) || 0;
+
+        base.rotina.ancoras.dormir = Boolean(c.dormir);
+        base.rotina.ancoras.comer = Boolean(c.comer);
+        base.rotina.ancoras.vinculo = Boolean(c.vinculo);
+        base.rotina.estado = r.estado || f.estado || 'Firme';
+        base.rotina.desgaste = [Boolean(c.desgaste0), Boolean(c.desgaste1), Boolean(c.desgaste2)];
+
+        SKILLS_CONFIG.forEach((sk) => {
+          base.pericias[sk.key] = Boolean(c[sk.key]);
+        });
+        base.pericias.profissaoNome = f.profissaoNome || '';
+        base.privilegioAntecedente = f.privilegioAntecedente || '';
+        base.alteracao.alteracao = f.alteracao || '';
+        base.alteracao.forma = f.forma || '';
+        base.alteracao.preco = f.preco || '';
+        base.anotacoes = f.anotacoes || '';
+        return base;
+      }
+
+      // Formato oficial compatível com parseImportedSurvivor() da Tela do Mestre
+      const merged = deepMerge(base, raw);
+      merged.accent = parseHex(merged.accent) ? String(merged.accent).toUpperCase() : '';
+
+      // Migração suave caso o arquivo venha com chaves alternativas
+      if (raw.alteracaoDissonante && !raw.alteracao) {
+        merged.alteracao = deepMerge(base.alteracao, raw.alteracaoDissonante);
+      }
+      if (raw.pericias && raw.pericias.profissaoTreinada !== undefined && raw.pericias.profissao === undefined) {
+        merged.pericias.profissao = Boolean(raw.pericias.profissaoTreinada);
+      }
+      if (Array.isArray(raw.poderes)) {
+        merged.poderes = raw.poderes.map((p) => ({
+          nivel: p.nivel || '',
+          poder: p.poder !== undefined ? p.poder : (p.nome || ''),
+          custo: p.custo || '',
+          efeito: p.efeito || ''
+        }));
+      }
+
+      return merged;
+    }
+
+    // Gera exatamente o objeto JSON esperado por parseImportedSurvivor() da Tela do Mestre
+    function buildExportPayload() {
+      return {
+        theme: state.theme === 'papel' ? 'papel' : 'terminal',
+        identificacao: {
+          nome: state.identificacao.nome || '',
+          jogador: state.identificacao.jogador || '',
+          nivel: parseInt(state.identificacao.nivel, 10) || 1,
+          antesDoFim: state.identificacao.antesDoFim || '',
+          queroProteger: state.identificacao.queroProteger || '',
+          antecedente: state.identificacao.antecedente || '',
+          classe: state.identificacao.classe || ''
+        },
+        atributos: {
+          forca: parseInt(state.atributos.forca, 10) || 0,
+          cognicao: parseInt(state.atributos.cognicao, 10) || 0,
+          agilidade: parseInt(state.atributos.agilidade, 10) || 0,
+          vigor: parseInt(state.atributos.vigor, 10) || 0,
+          mente: parseInt(state.atributos.mente, 10) || 0
+        },
+        recursos: {
+          integridadeAtual: parseInt(state.recursos.integridadeAtual, 10) || 0,
+          integridadeMax: parseInt(state.recursos.integridadeMax, 10) || 0,
+          pulsoAtual: parseInt(state.recursos.pulsoAtual, 10) || 0,
+          pulsoMax: parseInt(state.recursos.pulsoMax, 10) || 0,
+          reacaoDisponivel: Boolean(state.recursos.reacaoDisponivel),
+          rd: parseInt(state.recursos.rd, 10) || 0
+        },
+        rotina: {
+          ancoras: {
+            dormir: Boolean(state.rotina.ancoras.dormir),
+            comer: Boolean(state.rotina.ancoras.comer),
+            vinculo: Boolean(state.rotina.ancoras.vinculo)
+          },
+          estado: state.rotina.estado || '',
+          desgaste: [
+            Boolean(state.rotina.desgaste[0]),
+            Boolean(state.rotina.desgaste[1]),
+            Boolean(state.rotina.desgaste[2])
+          ]
+        },
+        defesas: {
+          esquivaDados: parseInt(state.defesas.esquivaDados, 10) || 0,
+          esquivaPassiva: parseInt(state.defesas.esquivaPassiva, 10) || 0,
+          bloqueioDados: parseInt(state.defesas.bloqueioDados, 10) || 0,
+          bloqueioPassiva: parseInt(state.defesas.bloqueioPassiva, 10) || 0
+        },
+        pericias: {
+          luta: Boolean(state.pericias.luta),
+          atletismo: Boolean(state.pericias.atletismo),
+          fortitude: Boolean(state.pericias.fortitude),
+          tolerancia: Boolean(state.pericias.tolerancia),
+          pontaria: Boolean(state.pericias.pontaria),
+          furtividade: Boolean(state.pericias.furtividade),
+          reflexos: Boolean(state.pericias.reflexos),
+          prestidigitacao: Boolean(state.pericias.prestidigitacao),
+          pilotagem: Boolean(state.pericias.pilotagem),
+          tecnologia: Boolean(state.pericias.tecnologia),
+          medicina: Boolean(state.pericias.medicina),
+          biomedicina: Boolean(state.pericias.biomedicina),
+          investigacao: Boolean(state.pericias.investigacao),
+          tatica: Boolean(state.pericias.tatica),
+          profissao: Boolean(state.pericias.profissao),
+          profissaoNome: state.pericias.profissaoNome || '',
+          vontade: Boolean(state.pericias.vontade),
+          sobrevivencia: Boolean(state.pericias.sobrevivencia),
+          influencia: Boolean(state.pericias.influencia),
+          intuicao: Boolean(state.pericias.intuicao),
+          percepcao: Boolean(state.pericias.percepcao)
+        },
+        privilegioAntecedente: state.privilegioAntecedente || '',
+        alteracao: {
+          alteracao: state.alteracao.alteracao || '',
+          forma: state.alteracao.forma || '',
+          preco: state.alteracao.preco || ''
+        },
+        poderes: (state.poderes || []).map((p) => ({
+          nivel: p.nivel || '',
+          poder: p.poder || '',
+          custo: p.custo || '',
+          efeito: p.efeito || ''
+        })),
+        proficiencias: {
+          armasSimples: Boolean(state.proficiencias.armasSimples),
+          armasMarciais: Boolean(state.proficiencias.armasMarciais),
+          fogoLeve: Boolean(state.proficiencias.fogoLeve),
+          fogoPesado: Boolean(state.proficiencias.fogoPesado)
+        },
+        armas: (state.armas || []).map((w) => ({
+          arma: w.arma || '',
+          dano: w.dano || '',
+          crit: w.crit || '',
+          alcance: w.alcance || '',
+          efeito: w.efeito || '',
+          modificacao: w.modificacao || ''
+        })),
+        protecao: {
+          tipo: state.protecao.tipo || '',
+          item: state.protecao.item || '',
+          rd: parseInt(state.protecao.rd, 10) || 0
+        },
+        equipamento: {
+          municao: parseInt(state.equipamento.municao, 10) || 0,
+          kitsPrimeirosSocorros: parseInt(state.equipamento.kitsPrimeirosSocorros, 10) || 0,
+          kitCirurgico: parseInt(state.equipamento.kitCirurgico, 10) || 0,
+          racoes: parseInt(state.equipamento.racoes, 10) || 0,
+          outros: state.equipamento.outros || ''
+        },
+        vinculos: (state.vinculos || []).map((v) => ({
+          alvo: v.alvo || '',
+          nota: v.nota || ''
+        })),
+        anotacoes: state.anotacoes || ''
+      };
+    }
+
+    // ==========================================================================
+    // RENDERIZAÇÃO DE PERÍCIAS (GRADE ÚNICA) E LISTAS DINÂMICAS
+    // ==========================================================================
+    function getSkillPool(skillKey, attrKey) {
+      const attrVal = Math.max(0, parseInt(state.atributos[attrKey], 10) || 0);
+      const trainedBonus = state.pericias[skillKey] ? 2 : 0;
+      return attrVal + trainedBonus;
+    }
+
+    function renderSkills() {
+      const grid = document.getElementById('skills-grid');
+      if (!grid) return;
+      grid.innerHTML = '';
+
+      SKILLS_CONFIG.forEach((skill) => {
+        const isTrained = Boolean(state.pericias[skill.key]);
+        const pool = getSkillPool(skill.key, skill.attr);
+        const item = document.createElement('div');
+        item.className = 'skill-item' + (isTrained ? ' is-trained' : '');
+
+        if (skill.isProfession) {
+          item.innerHTML = `
+            <div class="skill-left">
+              <input type="checkbox" class="check-box" data-path="pericias.${skill.key}" ${isTrained ? 'checked' : ''} aria-label="Profissão treinada" />
+              <span class="skill-name">Profissão:</span>
+              <input type="text" class="skill-prof-input" data-path="pericias.profissaoNome" value="${escapeHtml(state.pericias.profissaoNome || '')}" placeholder="Qual..." />
+              ${isTrained ? '<span class="skill-rank">[2]</span>' : ''}
+            </div>
+            <button type="button" class="skill-roll-btn no-print" onclick="rollSkill('${skill.key}', 'Profissão', '${skill.attr}')">${pool}d6</button>
+          `;
+        } else {
+          item.innerHTML = `
+            <label class="skill-left" style="cursor: pointer;">
+              <input type="checkbox" class="check-box" data-path="pericias.${skill.key}" ${isTrained ? 'checked' : ''} />
+              <span class="skill-name">${skill.label}</span>
+              ${isTrained ? '<span class="skill-rank">[2]</span>' : ''}
+            </label>
+            <button type="button" class="skill-roll-btn no-print" onclick="rollSkill('${skill.key}', '${skill.label}', '${skill.attr}')">${pool}d6</button>
+          `;
+        }
+
+        grid.appendChild(item);
+      });
+    }
+
+    function renderPowers() {
+      const list = document.getElementById('powers-list');
+      if (!list) return;
+      list.innerHTML = '';
+
+      state.poderes.forEach((p, idx) => {
+        const row = document.createElement('div');
+        row.className = 'power-row';
+        row.innerHTML = `
+          <div class="field-group">
+            <label class="field-label">Nível</label>
+            <input type="text" class="input-box input-num" value="${escapeHtml(p.nivel)}" oninput="updateListItem('poderes', ${idx}, 'nivel', this.value)" placeholder="1" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Poder</label>
+            <input type="text" class="input-box" value="${escapeHtml(p.poder)}" oninput="updateListItem('poderes', ${idx}, 'poder', this.value)" placeholder="Nome do poder" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Custo</label>
+            <input type="text" class="input-box" value="${escapeHtml(p.custo)}" oninput="updateListItem('poderes', ${idx}, 'custo', this.value)" placeholder="Ex.: 1 Pulso" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Efeito</label>
+            <textarea class="textarea-box" style="min-height: 34px;" rows="1" oninput="updateListItem('poderes', ${idx}, 'efeito', this.value)" placeholder="Descrição mecânica e narrativa...">${escapeHtml(p.efeito)}</textarea>
+          </div>
+          <div class="no-print" style="padding-top: 19px;">
+            <button type="button" class="btn btn-sm btn-critical" onclick="removeListItem('poderes', ${idx})" title="Remover poder">X</button>
+          </div>
+        `;
+        list.appendChild(row);
+      });
+    }
+
+    function renderWeapons() {
+      const list = document.getElementById('weapons-list');
+      if (!list) return;
+      list.innerHTML = '';
+
+      state.armas.forEach((w, idx) => {
+        const row = document.createElement('div');
+        row.className = 'weapon-row';
+        row.innerHTML = `
+          <div class="field-group">
+            <label class="field-label">Arma</label>
+            <input type="text" class="input-box" value="${escapeHtml(w.arma)}" oninput="updateListItem('armas', ${idx}, 'arma', this.value)" placeholder="Ex.: Faca, Revólver..." />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Dano</label>
+            <input type="text" class="input-box input-num" value="${escapeHtml(w.dano)}" oninput="updateListItem('armas', ${idx}, 'dano', this.value)" placeholder="Ex.: 2" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Crit</label>
+            <input type="text" class="input-box input-num" value="${escapeHtml(w.crit)}" oninput="updateListItem('armas', ${idx}, 'crit', this.value)" placeholder="2" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Alcance</label>
+            <input type="text" class="input-box" value="${escapeHtml(w.alcance)}" oninput="updateListItem('armas', ${idx}, 'alcance', this.value)" placeholder="Curto/Médio" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Efeito</label>
+            <input type="text" class="input-box" value="${escapeHtml(w.efeito)}" oninput="updateListItem('armas', ${idx}, 'efeito', this.value)" placeholder="Corte, perfurar..." />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Modificação</label>
+            <input type="text" class="input-box" value="${escapeHtml(w.modificacao)}" oninput="updateListItem('armas', ${idx}, 'modificacao', this.value)" placeholder="Mira, silenciador..." />
+          </div>
+          <div class="no-print">
+            <button type="button" class="btn btn-sm btn-critical" onclick="removeListItem('armas', ${idx})" title="Remover arma">X</button>
+          </div>
+        `;
+        list.appendChild(row);
+      });
+    }
+
+    function renderBonds() {
+      const list = document.getElementById('bonds-list');
+      if (!list) return;
+      list.innerHTML = '';
+
+      state.vinculos.forEach((b, idx) => {
+        const row = document.createElement('div');
+        row.className = 'bond-row';
+        row.innerHTML = `
+          <div class="field-group">
+            <label class="field-label">Pessoa / Grupo / Lugar</label>
+            <input type="text" class="input-box" value="${escapeHtml(b.alvo)}" oninput="updateListItem('vinculos', ${idx}, 'alvo', this.value)" placeholder="Nome do vínculo..." />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Relação / Promessa / Nota</label>
+            <input type="text" class="input-box" value="${escapeHtml(b.nota)}" oninput="updateListItem('vinculos', ${idx}, 'nota', this.value)" placeholder="O que conecta vocês..." />
+          </div>
+          <div class="no-print" style="padding-top: 18px;">
+            <button type="button" class="btn btn-sm btn-critical" onclick="removeListItem('vinculos', ${idx})" title="Remover vínculo">X</button>
+          </div>
+        `;
+        list.appendChild(row);
+      });
+    }
+
+    function updateListItem(listKey, index, field, value) {
+      if (state[listKey] && state[listKey][index]) {
+        state[listKey][index][field] = value;
+        saveToStorage();
+      }
+    }
+
+    function addPowerRow() {
+      state.poderes.push({ nivel: '', poder: '', custo: '', efeito: '' });
+      renderPowers();
+      saveToStorage();
+    }
+
+    function addWeaponRow() {
+      state.armas.push({ arma: '', dano: '', crit: '', alcance: '', efeito: '', modificacao: '' });
+      renderWeapons();
+      saveToStorage();
+    }
+
+    function addBondRow() {
+      state.vinculos.push({ alvo: '', nota: '' });
+      renderBonds();
+      saveToStorage();
+    }
+
+    function removeListItem(listKey, index) {
+      state[listKey].splice(index, 1);
+      if (listKey === 'poderes') renderPowers();
+      if (listKey === 'armas') renderWeapons();
+      if (listKey === 'vinculos') renderBonds();
+      saveToStorage();
+    }
+
+    // ==========================================================================
+    // SINCRONIZAÇÃO DE CAMPOS, CÁLCULOS AUTOMÁTICOS E BADGES
+    // ==========================================================================
+    function syncDomFromState() {
+      document.querySelectorAll('[data-path]').forEach((el) => {
+        const path = el.getAttribute('data-path');
+        const val = getByPath(state, path);
+        if (el.type === 'checkbox') {
+          el.checked = Boolean(val);
+        } else if (val !== undefined && val !== null) {
+          el.value = val;
+        }
+      });
+
+      document.querySelectorAll('.estado-check').forEach((cb) => {
+        cb.checked = cb.value === state.rotina.estado;
+      });
+
+      recalculateMechanics();
+    }
+
+    function recalculateMechanics() {
+      // 1. Atualiza rótulos de rolagem nos botões de Atributo
+      ['forca', 'cognicao', 'agilidade', 'vigor', 'mente'].forEach((attr) => {
+        const v = Math.max(0, parseInt(state.atributos[attr], 10) || 0);
+        const btn = document.getElementById(`btn-roll-${attr}`);
+        if (btn) btn.textContent = `ROLAR ${v}d6`;
+      });
+
+      // 2. Defesas automáticas:
+      // Esquiva = Agilidade + (Reflexos ? 2 : 0), passiva = Math.floor(dados / 2)
+      const agi = Math.max(0, parseInt(state.atributos.agilidade, 10) || 0);
+      const calcEsquivaDados = agi + (state.pericias.reflexos ? 2 : 0);
+      const calcEsquivaPassiva = Math.floor(calcEsquivaDados / 2);
+
+      if (!defenseManualOverride.esquiva) {
+        state.defesas.esquivaDados = calcEsquivaDados;
+        state.defesas.esquivaPassiva = calcEsquivaPassiva;
+        const elD = document.getElementById('def-esquiva-dados');
+        const elP = document.getElementById('def-esquiva-passiva');
+        if (elD) elD.value = calcEsquivaDados;
+        if (elP) elP.value = calcEsquivaPassiva;
+        document.getElementById('resync-esquiva-btn').style.display = 'none';
+      } else {
+        document.getElementById('resync-esquiva-btn').style.display = 'inline-flex';
+      }
+
+      // Bloqueio = Vigor + (Fortitude ? 2 : 0), passiva = Math.floor(dados / 2)
+      const vig = Math.max(0, parseInt(state.atributos.vigor, 10) || 0);
+      const calcBloqueioDados = vig + (state.pericias.fortitude ? 2 : 0);
+      const calcBloqueioPassiva = Math.floor(calcBloqueioDados / 2);
+
+      if (!defenseManualOverride.bloqueio) {
+        state.defesas.bloqueioDados = calcBloqueioDados;
+        state.defesas.bloqueioPassiva = calcBloqueioPassiva;
+        const elD = document.getElementById('def-bloqueio-dados');
+        const elP = document.getElementById('def-bloqueio-passiva');
+        if (elD) elD.value = calcBloqueioDados;
+        if (elP) elP.value = calcBloqueioPassiva;
+        document.getElementById('resync-bloqueio-btn').style.display = 'none';
+      } else {
+        document.getElementById('resync-bloqueio-btn').style.display = 'inline-flex';
+      }
+
+      // 3. Badge de Integridade: SAUDÁVEL / FERIDO / MORRENDO
+      const intAtual = parseInt(state.recursos.integridadeAtual, 10) || 0;
+      const intMax = parseInt(state.recursos.integridadeMax, 10) || 0;
+      const badgeInt = document.getElementById('badge-integridade');
+      if (badgeInt) {
+        badgeInt.className = 'status-badge';
+        if (intAtual <= 0) {
+          badgeInt.textContent = 'MORRENDO';
+          badgeInt.classList.add('is-crit');
+        } else if (intMax > 0 && intAtual < intMax / 2) {
+          badgeInt.textContent = 'FERIDO';
+          badgeInt.classList.add('is-warn');
+        } else {
+          badgeInt.textContent = 'SAUDÁVEL';
+          badgeInt.classList.add('is-ok');
+        }
+      }
+
+      // 4. Badge de Pulso: ATIVO / COLAPSO
+      const pulsoAtual = parseInt(state.recursos.pulsoAtual, 10) || 0;
+      const badgePulso = document.getElementById('badge-pulso');
+      if (badgePulso) {
+        badgePulso.className = 'status-badge';
+        if (pulsoAtual <= 0) {
+          badgePulso.textContent = 'COLAPSO';
+          badgePulso.classList.add('is-crit');
+        } else {
+          badgePulso.textContent = 'ATIVO';
+          badgePulso.classList.add('is-ok');
+        }
+      }
+
+      // 5. Badge de Desgaste: 0/3, 1/3, 2/3, ESGOTADO
+      const dArr = state.rotina.desgaste || [false, false, false];
+      const dCount = (dArr[0] ? 1 : 0) + (dArr[1] ? 1 : 0) + (dArr[2] ? 1 : 0);
+      const badgeDesg = document.getElementById('badge-desgaste');
+      if (badgeDesg) {
+        badgeDesg.className = 'status-badge';
+        if (dCount >= 3) {
+          badgeDesg.textContent = 'ESGOTADO';
+          badgeDesg.classList.add('is-crit');
+        } else if (dCount > 0) {
+          badgeDesg.textContent = `${dCount}/3`;
+          badgeDesg.classList.add('is-warn');
+        } else {
+          badgeDesg.textContent = '0/3';
+        }
+      }
+
+      // 6. Destaque na caixa de Alteração quando Classe incluir "Dissonante"
+      const classeVal = (state.identificacao.classe || '').toLowerCase();
+      const isDissonante = classeVal.includes('dissonante');
+      const panelDiss = document.getElementById('panel-dissonante');
+      const badgeDiss = document.getElementById('badge-dissonante');
+      if (panelDiss && badgeDiss) {
+        panelDiss.classList.toggle('is-dissonant-active', isDissonante);
+        badgeDiss.style.display = isDissonante ? 'inline-block' : 'none';
+      }
+
+      // 7. Re-renderiza perícias para atualizar paradas Xd6 e destaque de treinadas
+      renderSkills();
+    }
+
+    function markDefenseManual(type) {
+      defenseManualOverride[type] = true;
+      recalculateMechanics();
+      saveToStorage();
+    }
+
+    function resyncDefense(type) {
+      defenseManualOverride[type] = false;
+      recalculateMechanics();
+      saveToStorage();
+      showNotice(`Defesa (${type.toUpperCase()}) sincronizada automaticamente.`, false);
+    }
+
+    function setRotinaEstado(estado) {
+      state.rotina.estado = state.rotina.estado === estado ? '' : estado;
+      document.querySelectorAll('.estado-check').forEach((cb) => {
+        cb.checked = cb.value === state.rotina.estado;
+      });
+      saveToStorage();
+    }
+
+    function stepValue(path, delta) {
+      const cur = parseInt(getByPath(state, path), 10) || 0;
+      const next = Math.max(0, cur + delta);
+      setByPath(state, path, next);
+      const input = document.querySelector(`[data-path="${path}"]`);
+      if (input) input.value = next;
+      recalculateMechanics();
+      saveToStorage();
+    }
+
+    // Delegação global para inputs e checkboxes com data-path
+    document.addEventListener('input', (e) => {
+      const path = e.target.getAttribute('data-path');
+      if (!path) return;
+      if (e.target.type === 'number') {
+        const num = e.target.value === '' ? 0 : parseInt(e.target.value, 10);
+        setByPath(state, path, isNaN(num) ? 0 : num);
+      } else if (e.target.type !== 'checkbox') {
+        setByPath(state, path, e.target.value);
+      }
+      recalculateMechanics();
+      saveToStorage();
+    });
+
+    document.addEventListener('change', (e) => {
+      const path = e.target.getAttribute('data-path');
+      if (!path) return;
+      if (e.target.type === 'checkbox') {
+        setByPath(state, path, e.target.checked);
+        recalculateMechanics();
+        saveToStorage();
+      }
+    });
+
+    // ==========================================================================
+    // DOCK DE ROLAGEM DE DADOS (MECÂNICA OFICIAL LOST PARADISE)
+    // ==========================================================================
+    function selectPool(pool) {
+      currentPool = Math.max(1, Math.min(20, parseInt(pool, 10) || 1));
+      currentRollLabel = `PARADA MANUAL (${currentPool}d6)`;
+      updatePoolButtons();
+      document.getElementById('dock-context').textContent = currentRollLabel;
+    }
+
+    function updatePoolButtons() {
+      document.querySelectorAll('.pool-btn').forEach((btn) => {
+        const p = parseInt(btn.getAttribute('data-pool'), 10);
+        btn.classList.toggle('is-active', p === currentPool);
+      });
+    }
+
+    function rollAttribute(attrKey, attrLabel) {
+      const pool = Math.max(1, parseInt(state.atributos[attrKey], 10) || 1);
+      rollPool(pool, `ATRIBUTO: ${attrLabel.toUpperCase()} (${pool}d6)`);
+    }
+
+    function rollSkill(skillKey, skillLabel, attrKey) {
+      const pool = Math.max(1, getSkillPool(skillKey, attrKey));
+      const trainedTag = state.pericias[skillKey] ? ' + TREINO' : '';
+      rollPool(pool, `PERÍCIA: ${skillLabel.toUpperCase()}${trainedTag} (${pool}d6)`);
+    }
+
+    function rollDefense(defKey, defLabel) {
+      const field = defKey === 'esquiva' ? 'esquivaDados' : 'bloqueioDados';
+      const pool = Math.max(1, parseInt(state.defesas[field], 10) || 1);
+      rollPool(pool, `DEFESA: ${defLabel.toUpperCase()} (${pool}d6)`);
+    }
+
+    function rollPool(count, contextLabel) {
+      const pool = Math.max(1, Math.min(20, parseInt(count, 10) || 1));
+      currentPool = pool;
+      if (contextLabel) {
+        currentRollLabel = contextLabel;
+      }
+      updatePoolButtons();
+
+      // Gera os dados d6
+      const dice = [];
+      for (let i = 0; i < pool; i++) {
+        dice.push({
+          val: Math.floor(Math.random() * 6) + 1,
+          tag: 'none'
+        });
+      }
+
+      // Classifica sucessos:
+      // 6 => Limpo (.is-limpo)
+      // 5 => Esforço (.is-esforco)
+      // Par de 4 => Esforço (.is-esforco)
+      // Par de 3 => Esforço (.is-esforco)
+      // 1 => Falha / Risco (.is-one)
+      let limpoCount = 0;
+      let esforcoCount = 0;
+      const foursIdx = [];
+      const threesIdx = [];
+
+      dice.forEach((d, idx) => {
+        if (d.val === 6) {
+          d.tag = 'limpo';
+          limpoCount++;
+        } else if (d.val === 5) {
+          d.tag = 'esforco';
+          esforcoCount++;
+        } else if (d.val === 4) {
+          foursIdx.push(idx);
+        } else if (d.val === 3) {
+          threesIdx.push(idx);
+        } else if (d.val === 1) {
+          d.tag = 'one';
+        }
+      });
+
+      // Pares de 4
+      for (let i = 0; i + 1 < foursIdx.length; i += 2) {
+        dice[foursIdx[i]].tag = 'esforco';
+        dice[foursIdx[i + 1]].tag = 'esforco';
+        esforcoCount++;
+      }
+
+      // Pares de 3
+      for (let i = 0; i + 1 < threesIdx.length; i += 2) {
+        dice[threesIdx[i]].tag = 'esforco';
+        dice[threesIdx[i + 1]].tag = 'esforco';
+        esforcoCount++;
+      }
+
+      const totalSuccesses = limpoCount + esforcoCount;
+
+      // Renderiza chips quadrados no dock
+      const chipsRow = document.getElementById('dice-chips-row');
+      chipsRow.innerHTML = dice
+        .map((d) => {
+          let cls = 'die-chip';
+          if (d.tag === 'limpo') cls += ' is-limpo';
+          else if (d.tag === 'esforco') cls += ' is-esforco';
+          else if (d.tag === 'one') cls += ' is-one';
+          return `<span class="${cls}">${d.val}</span>`;
+        })
+        .join('');
+
+      // Renderiza leitura de sucessos e badges CRIT 2 / CRIT 3
+      let critHtml = '';
+      if (limpoCount >= 3) {
+        critHtml = '<span class="crit-badge">CRIT 3</span>';
+      } else if (limpoCount === 2) {
+        critHtml = '<span class="crit-badge">CRIT 2</span>';
+      }
+
+      document.getElementById('dock-context').textContent = currentRollLabel;
+      document.getElementById('dock-readout').innerHTML = `
+        <span>SUCESSOS: ${totalSuccesses} (${limpoCount} LIMPO + ${esforcoCount} ESFORÇO)</span>
+        ${critHtml}
+      `;
+    }
+
+    // ==========================================================================
+    // TEMA, AVISOS INLINE (.notice-bar), MODAL REGRAS, JSON E LIMPEZA
+    // ==========================================================================
+    function applyTheme(theme) {
+      const validTheme = theme === 'papel' ? 'papel' : 'terminal';
+      state.theme = validTheme;
+      document.documentElement.setAttribute('data-theme', validTheme);
+      const btn = document.getElementById('theme-toggle-btn');
+      if (btn) {
+        btn.textContent = validTheme === 'papel' ? 'MODO TERMINAL' : 'MODO PAPEL';
+      }
+    }
+
+    function toggleTheme() {
+      const next = state.theme === 'terminal' ? 'papel' : 'terminal';
+      applyTheme(next);
+      saveToStorage();
+      showNotice(`TEMA ALTERADO: ${next.toUpperCase()}.`, false);
+    }
+
+    function showNotice(message, isCritical = false, actionButtonsHtml = '') {
+      const bar = document.getElementById('notice-bar');
+      const textEl = document.getElementById('notice-text');
+      const actionsEl = document.getElementById('notice-actions');
+      if (!bar || !textEl || !actionsEl) return;
+
+      clearTimeout(noticeTimer);
+      textEl.textContent = message;
+      actionsEl.innerHTML = actionButtonsHtml;
+      bar.classList.toggle('is-critical', isCritical);
+      bar.classList.add('is-visible');
+
+      if (!actionButtonsHtml) {
+        noticeTimer = setTimeout(() => {
+          hideNotice();
+        }, 3500);
+      }
+    }
+
+    function hideNotice() {
+      const bar = document.getElementById('notice-bar');
+      if (bar) {
+        bar.classList.remove('is-visible', 'is-critical');
+      }
+    }
+
+    function requestClearSheet() {
+      showNotice(
+        'CONFIRMAR LIMPEZA TOTAL DA FICHA? TODOS OS DADOS SALVOS NESTE NAVEGADOR SERÃO ZERADOS.',
+        true,
+        `
+          <button type="button" class="btn btn-sm btn-critical" onclick="confirmClearSheet()">SIM, LIMPAR TUDO</button>
+          <button type="button" class="btn btn-sm" onclick="hideNotice()">CANCELAR</button>
+        `
+      );
+    }
+
+    function confirmClearSheet() {
+      const currentTheme = state.theme;
+      const currentAccent = state.accent;
+      state = getDefaultState();
+      state.theme = currentTheme;
+      state.accent = currentAccent;
+      defenseManualOverride = { esquiva: false, bloqueio: false };
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch (_) {}
+
+      renderPowers();
+      renderWeapons();
+      renderBonds();
+      syncDomFromState();
+      saveToStorage();
+      showNotice('FICHA ZERADA COM SUCESSO.', false);
+    }
+
+    function exportJSON() {
+      try {
+        const payload = buildExportPayload();
+        const slug = (payload.identificacao.nome || 'sobrevivente')
+          .trim()
+          .toLowerCase()
+          .replace(/[^a-z0-9áéíóúâêôãõç_-]+/gi, '_');
+        const filename = `lost_paradise_${slug || 'sobrevivente'}.json`;
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showNotice(`JSON EXPORTADO: ${filename}`, false);
+      } catch (err) {
+        console.error('Erro ao exportar JSON:', err);
+        showNotice('FALHA AO EXPORTAR O ARQUIVO JSON.', true);
+      }
+    }
+
+    function importJSON(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          const prevAccent = state.accent;
+          state = normalizeImportedData(parsed);
+          if (!parsed || !parsed.accent) state.accent = prevAccent;
+
+          // Verifica se as defesas importadas diferem do cálculo automático
+          const expectedEsq = (parseInt(state.atributos.agilidade, 10) || 0) + (state.pericias.reflexos ? 2 : 0);
+          const expectedBloq = (parseInt(state.atributos.vigor, 10) || 0) + (state.pericias.fortitude ? 2 : 0);
+          defenseManualOverride.esquiva = state.defesas.esquivaDados !== expectedEsq;
+          defenseManualOverride.bloqueio = state.defesas.bloqueioDados !== expectedBloq;
+
+          applyTheme(state.theme);
+          applyAccent(state.accent);
+          renderPowers();
+          renderWeapons();
+          renderBonds();
+          syncDomFromState();
+          saveToStorage();
+          showNotice('FICHA IMPORTADA COM SUCESSO.', false);
+        } catch (err) {
+          console.error('Erro ao importar JSON:', err);
+          showNotice('ARQUIVO JSON INVÁLIDO OU INCOMPATÍVEL.', true);
+        } finally {
+          event.target.value = '';
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function openRulesModal() {
+      document.getElementById('rules-modal').classList.add('is-open');
+    }
+
+    function closeRulesModal() {
+      document.getElementById('rules-modal').classList.remove('is-open');
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeRulesModal();
+        closeColorModal();
+        closeDiceModal();
+        hideNotice();
+      }
+    });
+
+    // ==========================================================================
+    // COR DA FICHA (cor de destaque personalizada, salva junto com o estado)
+    // ==========================================================================
+    const ACCENT_PRESETS = [
+      { nome: 'Vermelho', hex: '#B5402A' },
+      { nome: 'Verde', hex: '#6E8B5B' },
+      { nome: 'Azul', hex: '#4A7FA7' },
+      { nome: 'Roxo', hex: '#8266A9' },
+      { nome: 'Amarelo', hex: '#C9A227' },
+      { nome: 'Ciano', hex: '#3E9A9A' },
+      { nome: 'Rosa', hex: '#C0577F' }
+    ];
+
+    function parseHex(hex) {
+      const m = /^#([0-9a-f]{6})$/i.exec(String(hex || '').trim());
+      if (!m) return null;
+      const n = parseInt(m[1], 16);
+      return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+    }
+
+    function readCssVar(name) {
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+
+    function applyAccent(hex) {
+      const rgb = parseHex(hex);
+      const rootStyle = document.documentElement.style;
+      if (!rgb) {
+        state.accent = '';
+        ['--accent-primary', '--accent-primary-ink', '--accent-primary-tint'].forEach((p) => rootStyle.removeProperty(p));
+      } else {
+        state.accent = String(hex).toUpperCase();
+        const lum = (0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2]) / 255;
+        rootStyle.setProperty('--accent-primary', state.accent);
+        rootStyle.setProperty('--accent-primary-ink', lum > 0.5 ? '#121110' : '#F5F1E8');
+        rootStyle.setProperty('--accent-primary-tint', `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.14)`);
+      }
+      syncColorModal();
+    }
+
+    function setAccent(hex) {
+      applyAccent(hex);
+      saveToStorage();
+    }
+
+    function renderSwatches() {
+      const box = document.getElementById('color-swatches');
+      if (!box) return;
+      box.innerHTML = ACCENT_PRESETS.map((p) =>
+        `<button type="button" class="color-swatch" data-hex="${p.hex}" title="${p.nome}" aria-label="${p.nome}" style="background-color: ${p.hex};" onclick="setAccent('${p.hex}')"></button>`
+      ).join('');
+      const custom = document.getElementById('accent-custom');
+      if (custom) custom.addEventListener('input', (e) => setAccent(e.target.value));
+    }
+
+    function syncColorModal() {
+      const custom = document.getElementById('accent-custom');
+      if (custom) {
+        const current = state.accent || readCssVar('--accent-primary');
+        if (parseHex(current)) custom.value = current.toLowerCase();
+      }
+      document.querySelectorAll('.color-swatch').forEach((el) => {
+        el.classList.toggle('is-active', el.getAttribute('data-hex') === state.accent);
+      });
+    }
+
+    function openColorModal() {
+      syncColorModal();
+      document.getElementById('color-modal').classList.add('is-open');
+    }
+
+    function closeColorModal() {
+      document.getElementById('color-modal').classList.remove('is-open');
+    }
+
+    // ==========================================================================
+    // DADOS CUSTOMIZADOS (d4, d6, d12, d20) EM 3D COM CSS, SEM BIBLIOTECA EXTERNA
+    // ==========================================================================
+    const PHI = (1 + Math.sqrt(5)) / 2;
+    const DIE_RADIUS = { 4: 58, 6: 52, 12: 50, 20: 56 };
+    const DIE_LIGHT = (() => {
+      const v = [-0.35, -0.55, 0.76];
+      const l = Math.hypot(v[0], v[1], v[2]);
+      return [v[0] / l, v[1] / l, v[2] / l];
+    })();
+    const dieShapeCache = {};
+    let customSides = 6;
+    let diceAnimFrame = null;
+
+    function v3sub(a, b) { return [a[0] - b[0], a[1] - b[1], a[2] - b[2]]; }
+    function v3dot(a, b) { return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]; }
+    function v3cross(a, b) {
+      return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+    }
+    function v3norm(a) {
+      const l = Math.hypot(a[0], a[1], a[2]) || 1;
+      return [a[0] / l, a[1] / l, a[2] / l];
+    }
+
+    // Matrizes 3x3 em ordem de linha
+    function mat3mul(a, b) {
+      const o = new Array(9);
+      for (let r = 0; r < 3; r++) {
+        for (let c = 0; c < 3; c++) {
+          o[r * 3 + c] = a[r * 3] * b[c] + a[r * 3 + 1] * b[3 + c] + a[r * 3 + 2] * b[6 + c];
+        }
+      }
+      return o;
+    }
+
+    function rotAxis(axis, ang) {
+      const [x, y, z] = v3norm(axis);
+      const c = Math.cos(ang);
+      const s = Math.sin(ang);
+      const t = 1 - c;
+      return [
+        t * x * x + c, t * x * y - s * z, t * x * z + s * y,
+        t * x * y + s * z, t * y * y + c, t * y * z - s * x,
+        t * x * z - s * y, t * y * z + s * x, t * z * z + c
+      ];
+    }
+
+    function dieVertices(sides) {
+      const cube = [];
+      for (const x of [-1, 1]) for (const y of [-1, 1]) for (const z of [-1, 1]) cube.push([x, y, z]);
+      if (sides === 4) return [[1, 1, 1], [1, -1, -1], [-1, 1, -1], [-1, -1, 1]];
+      if (sides === 6) return cube;
+      const v = sides === 12 ? cube.slice() : [];
+      const p = 1 / PHI;
+      for (const a of [-1, 1]) {
+        for (const b of [-1, 1]) {
+          if (sides === 12) {
+            v.push([0, a * p, b * PHI], [a * p, b * PHI, 0], [b * PHI, 0, a * p]);
+          } else {
+            v.push([0, a, b * PHI], [a, b * PHI, 0], [b * PHI, 0, a]);
+          }
+        }
+      }
+      return v;
+    }
+
+    // Descobre as faces do poliedro a partir dos vértices e prepara cada face em 2D
+    function buildDieShape(sides) {
+      if (dieShapeCache[sides]) return dieShapeCache[sides];
+      const R = DIE_RADIUS[sides];
+      const verts = dieVertices(sides).map((v) => v3norm(v).map((c) => c * R));
+      const faces = [];
+      const seen = new Set();
+      const n = verts.length;
+
+      for (let i = 0; i < n; i++) {
+        for (let j = i + 1; j < n; j++) {
+          for (let k = j + 1; k < n; k++) {
+            let nrm = v3cross(v3sub(verts[j], verts[i]), v3sub(verts[k], verts[i]));
+            const len = Math.hypot(nrm[0], nrm[1], nrm[2]);
+            if (len < 1e-3) continue;
+            nrm = nrm.map((c) => c / len);
+            let d = v3dot(nrm, verts[i]);
+            let pos = 0;
+            let neg = 0;
+            verts.forEach((v) => {
+              const s = v3dot(nrm, v) - d;
+              if (s > 1e-3) pos++;
+              else if (s < -1e-3) neg++;
+            });
+            if (pos && neg) continue;
+            if (pos) { nrm = nrm.map((c) => -c); d = -d; }
+            const idx = [];
+            verts.forEach((v, m) => { if (Math.abs(v3dot(nrm, v) - d) < 1e-3) idx.push(m); });
+            const key = idx.join(',');
+            if (seen.has(key)) continue;
+            seen.add(key);
+            faces.push({ n: nrm, idx });
+          }
+        }
+      }
+
+      faces.forEach((f) => {
+        const pts3 = f.idx.map((m) => verts[m]);
+        f.c = [0, 1, 2].map((a) => pts3.reduce((s, p) => s + p[a], 0) / pts3.length);
+        let w = v3sub([0, 1, 0], f.n.map((x) => x * f.n[1]));
+        if (Math.hypot(w[0], w[1], w[2]) < 1e-3) w = v3sub([0, 0, 1], f.n.map((x) => x * f.n[2]));
+        f.w = v3norm(w);
+        f.u = v3cross(f.w, f.n);
+
+        const p2 = pts3.map((p) => {
+          const d = v3sub(p, f.c);
+          return [v3dot(d, f.u), v3dot(d, f.w)];
+        });
+        p2.sort((a, b) => Math.atan2(a[1], a[0]) - Math.atan2(b[1], b[0]));
+        f.p2 = p2;
+        f.minx = Math.min(...p2.map((p) => p[0]));
+        f.miny = Math.min(...p2.map((p) => p[1]));
+        f.W = Math.max(...p2.map((p) => p[0])) - f.minx;
+        f.H = Math.max(...p2.map((p) => p[1])) - f.miny;
+
+        let inr = Infinity;
+        for (let i = 0; i < p2.length; i++) {
+          const a = p2[i];
+          const b = p2[(i + 1) % p2.length];
+          const edge = Math.hypot(b[0] - a[0], b[1] - a[1]);
+          inr = Math.min(inr, Math.abs(a[0] * b[1] - b[0] * a[1]) / edge);
+        }
+        f.inr = inr;
+      });
+
+      // Numera as faces: faces opostas somam (lados + 1), como num dado de verdade
+      let next = 1;
+      faces.forEach((f, i) => {
+        if (f.value) return;
+        const j = faces.findIndex((g, m) => m !== i && !g.value && v3dot(g.n, f.n) < -0.999);
+        f.value = next;
+        if (j >= 0) faces[j].value = sides + 1 - next;
+        next++;
+      });
+
+      const shape = { sides, faces };
+      dieShapeCache[sides] = shape;
+      return shape;
+    }
+
+    function createDieElement(shape, ink) {
+      const el = document.createElement('div');
+      el.className = 'die-3d';
+      const shrink = 0.955;
+      const faceEls = shape.faces.map((f) => {
+        const fe = document.createElement('div');
+        fe.className = 'die-face';
+        fe.style.width = f.W.toFixed(2) + 'px';
+        fe.style.height = f.H.toFixed(2) + 'px';
+        fe.style.transform =
+          `translate3d(${f.c[0].toFixed(3)}px, ${f.c[1].toFixed(3)}px, ${f.c[2].toFixed(3)}px) ` +
+          `matrix3d(${f.u[0]}, ${f.u[1]}, ${f.u[2]}, 0, ${f.w[0]}, ${f.w[1]}, ${f.w[2]}, 0, ${f.n[0]}, ${f.n[1]}, ${f.n[2]}, 0, 0, 0, 0, 1) ` +
+          `translate(${f.minx.toFixed(3)}px, ${f.miny.toFixed(3)}px)`;
+        const poly = f.p2
+          .map((p) => `${(p[0] * shrink - f.minx).toFixed(2)}px ${(p[1] * shrink - f.miny).toFixed(2)}px`)
+          .join(', ');
+        fe.style.clipPath = `polygon(${poly})`;
+        fe.style.webkitClipPath = `polygon(${poly})`;
+
+        const num = document.createElement('span');
+        num.className = 'die-num';
+        num.textContent = f.value;
+        num.style.left = (-f.minx).toFixed(2) + 'px';
+        num.style.top = (-f.miny).toFixed(2) + 'px';
+        num.style.color = ink;
+        num.style.fontSize = Math.round(f.inr * (String(f.value).length > 1 ? 0.95 : 1.2)) + 'px';
+        if (shape.sides >= 12 && (f.value === 6 || f.value === 9)) num.classList.add('is-marked');
+        fe.appendChild(num);
+        el.appendChild(fe);
+        return { el: fe, n: f.n };
+      });
+      return { el, faceEls };
+    }
+
+    function drawDie(d, tau) {
+      const e = 1 - Math.pow(1 - tau, 3);
+      const inv = 1 - e;
+      const R = mat3mul(
+        mat3mul(rotAxis(d.ax1, d.a1 * inv), rotAxis(d.ax2, d.a2 * inv)),
+        d.Rf
+      );
+      const hop = 34 * d.scale * Math.abs(Math.sin(tau * Math.PI * 2.2)) * (1 - tau);
+      const px = d.x + d.dx0 * inv;
+      const py = d.y + d.dy0 * inv - hop;
+      d.die.el.style.transform =
+        `translate3d(${px.toFixed(2)}px, ${py.toFixed(2)}px, 0) scale(${d.scale}) ` +
+        `matrix3d(${R[0]}, ${R[3]}, ${R[6]}, 0, ${R[1]}, ${R[4]}, ${R[7]}, 0, ${R[2]}, ${R[5]}, ${R[8]}, 0, 0, 0, 0, 1)`;
+
+      d.die.faceEls.forEach((f) => {
+        const nz = R[6] * f.n[0] + R[7] * f.n[1] + R[8] * f.n[2];
+        if (nz <= 0) return;
+        const nx = R[0] * f.n[0] + R[1] * f.n[1] + R[2] * f.n[2];
+        const ny = R[3] * f.n[0] + R[4] * f.n[1] + R[5] * f.n[2];
+        const lit = Math.max(0, nx * DIE_LIGHT[0] + ny * DIE_LIGHT[1] + nz * DIE_LIGHT[2]);
+        const k = 0.58 + 0.55 * lit;
+        const c = d.base.map((v) => Math.max(0, Math.min(255, Math.round(v * k))));
+        f.el.style.backgroundColor = `rgb(${c[0]}, ${c[1]}, ${c[2]})`;
+      });
+    }
+
+    function selectCustomDie(sides) {
+      customSides = sides;
+      document.querySelectorAll('#die-type-btns .pool-btn').forEach((btn) => {
+        btn.classList.toggle('is-active', parseInt(btn.getAttribute('data-die'), 10) === sides);
+      });
+    }
+
+    function rollCustomDice() {
+      const sides = customSides;
+      const qtyEl = document.getElementById('dice-qty');
+      const modEl = document.getElementById('dice-mod');
+      const qty = Math.max(1, Math.min(10, parseInt(qtyEl.value, 10) || 1));
+      const mod = parseInt(modEl.value, 10) || 0;
+      qtyEl.value = qty;
+      modEl.value = mod;
+
+      if (diceAnimFrame) cancelAnimationFrame(diceAnimFrame);
+      const scene = document.getElementById('dice-scene');
+      scene.innerHTML = '';
+      document.getElementById('custom-dice-chips').innerHTML = '';
+      document.getElementById('custom-dice-readout').innerHTML = '';
+
+      const shape = buildDieShape(sides);
+      const base = parseHex(readCssVar('--accent-primary')) || [224, 122, 22];
+      const ink = readCssVar('--accent-primary-ink') || '#121110';
+
+      const perRow = 5;
+      const sceneW = scene.clientWidth || 600;
+      const cols = Math.min(qty, perRow);
+      const rows = Math.ceil(qty / perRow);
+      const slot = Math.min(130, sceneW / cols);
+      const scale = slot / 130;
+      const sceneH = Math.round(rows * slot + 44);
+      scene.style.height = sceneH + 'px';
+
+      // O d4 visto de frente mostra só uma face, então ganha mais inclinação
+      const tilt = sides === 4
+        ? mat3mul(rotAxis([0, 1, 0], 0.7), rotAxis([1, 0, 0], -0.5))
+        : mat3mul(rotAxis([0, 1, 0], 0.26), rotAxis([1, 0, 0], -0.2));
+      const results = [];
+      const dice = [];
+
+      for (let i = 0; i < qty; i++) {
+        const value = 1 + Math.floor(Math.random() * sides);
+        results.push(value);
+        const face = shape.faces.find((f) => f.value === value);
+        const Rt = [face.u[0], face.u[1], face.u[2], face.w[0], face.w[1], face.w[2], face.n[0], face.n[1], face.n[2]];
+
+        const row = Math.floor(i / perRow);
+        const inRow = row < rows - 1 ? perRow : qty - row * perRow;
+        const col = i % perRow;
+        const x = (sceneW - inRow * slot) / 2 + (col + 0.5) * slot;
+        const y = sceneH / 2 + (row - (rows - 1) / 2) * slot;
+
+        const die = createDieElement(shape, ink);
+        die.el.style.visibility = 'hidden';
+        scene.appendChild(die.el);
+
+        const randAxis = () => [Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5];
+        dice.push({
+          die, base, scale, x, y,
+          dx0: (Math.random() - 0.5) * slot * 1.6,
+          dy0: -slot * 0.9,
+          ax1: randAxis(),
+          ax2: randAxis(),
+          a1: (2 + Math.floor(Math.random() * 2)) * 2 * Math.PI + Math.random() * 2 * Math.PI,
+          a2: (1 + Math.floor(Math.random() * 2)) * 2 * Math.PI + Math.random() * 2 * Math.PI,
+          Rf: mat3mul(tilt, Rt)
+        });
+      }
+
+      const finish = () => {
+        diceAnimFrame = null;
+        document.getElementById('custom-dice-chips').innerHTML = results
+          .map((v) => {
+            let cls = 'die-chip';
+            if (v === sides) cls += ' is-limpo';
+            else if (v === 1) cls += ' is-one';
+            return `<span class="${cls}">${v}</span>`;
+          })
+          .join('');
+        const sum = results.reduce((a, b) => a + b, 0);
+        const modTxt = mod === 0 ? '' : (mod > 0 ? ` +${mod}` : ` ${mod}`);
+        document.getElementById('custom-dice-readout').innerHTML =
+          `<span class="dock-context">${qty}d${sides}${modTxt}</span><span>TOTAL: ${sum + mod}</span>`;
+      };
+
+      if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        dice.forEach((d) => {
+          d.die.el.style.visibility = 'visible';
+          drawDie(d, 1);
+        });
+        finish();
+        return;
+      }
+
+      const DURATION = 1600;
+      const STAGGER = 70;
+      const t0 = performance.now();
+      const frame = (now) => {
+        let done = true;
+        dice.forEach((d, i) => {
+          const t = now - t0 - i * STAGGER;
+          if (t < 0) { done = false; return; }
+          d.die.el.style.visibility = 'visible';
+          const tau = Math.min(1, t / DURATION);
+          if (tau < 1) done = false;
+          drawDie(d, tau);
+        });
+        if (done) finish();
+        else diceAnimFrame = requestAnimationFrame(frame);
+      };
+      diceAnimFrame = requestAnimationFrame(frame);
+    }
+
+    function openDiceModal() {
+      document.getElementById('dice-modal').classList.add('is-open');
+    }
+
+    function closeDiceModal() {
+      document.getElementById('dice-modal').classList.remove('is-open');
+    }
+
+    // ==========================================================================
+    // INICIALIZAÇÃO DA FICHA
+    // ==========================================================================
+    window.addEventListener('DOMContentLoaded', () => {
+      loadFromStorage();
+      applyTheme(state.theme);
+      renderSwatches();
+      applyAccent(state.accent);
+      renderPowers();
+      renderWeapons();
+      renderBonds();
+      syncDomFromState();
+    });
+  </script>
+
+  <script>
+    // Registra o service worker (só em http/https, então não faz nada ao abrir o arquivo direto do computador)
+    if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch((err) => console.error('Service worker:', err));
+      });
+    }
+  </script>
+</body>
+</html>
