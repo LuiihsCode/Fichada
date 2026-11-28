@@ -1,1478 +1,2149 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LOST PARADISE // Registro de Sobrevivente</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <title>Dossiê de Sobrevivência — Ficha de Personagem</title>
+
+  <!-- Fontes: Inter (leitura limpa), Space Grotesk (títulos de dossiê) e JetBrains Mono (dados e números) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Space Grotesk', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    };
+  </script>
+
   <style>
+    /* ==========================================================================
+       VARIÁVEIS DE TEMA DINÂMICAS (REGRA 60 / 30 / 10)
+       ========================================================================== */
+    :root,
+    html[data-theme="dark"] {
+      --color-60: #0e1318;
+      --color-30: #161e27;
+      --color-10: #f59e0b;
 
-    :root {
-      --color-60: #121210;        /* 60% - Fundo Geral */
-      --color-30: #1a1916;        /* 30% - Painéis e Cartões */
-      --color-10: #d97724;        /* 10% - Destaque Laranja/Âmbar Industrial */
-
-      /* Derivadas dinamicamente via luminância relativa no JS */
-      --text-main: #eae6df;
-      --text-muted: #8a847a;
-      --text-on-accent: #121210;
-      --border-color: rgba(234, 230, 223, 0.16);
-      --border-strong: rgba(234, 230, 223, 0.28);
-      --input-bg: rgba(0, 0, 0, 0.34);
-      --box-inner-bg: rgba(0, 0, 0, 0.22);
-      --status-green: #4ade80;
+      --bg-canvas: #0e1318;
+      --bg-pattern: rgba(245, 158, 11, 0.035);
+      --bg-card: #161e27;
+      --bg-card-sub: #1c2631;
+      --bg-input: #10171f;
+      --bg-toolbar: rgba(14, 19, 24, 0.92);
+      --border-main: #2a3644;
+      --border-subtle: #222d3a;
+      --text-primary: #eef2f6;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --accent-amber: #f59e0b;
+      --accent-amber-soft: rgba(245, 158, 11, 0.14);
+      --accent-amber-border: rgba(245, 158, 11, 0.42);
+      --accent-on-10: #111827;
+      --accent-moss: #10b981;
+      --accent-moss-soft: rgba(16, 185, 129, 0.14);
+      --accent-moss-border: rgba(16, 185, 129, 0.42);
+      --accent-danger: #ef4444;
+      --accent-danger-soft: rgba(239, 68, 68, 0.15);
+      --accent-dissonant: #a855f7;
+      --accent-dissonant-soft: rgba(168, 85, 247, 0.12);
+      --accent-dissonant-border: rgba(168, 85, 247, 0.45);
+      --shadow-card: 0 8px 24px -8px rgba(0, 0, 0, 0.55);
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+    html[data-theme="paper"] {
+      --color-60: #f2efe9;
+      --color-30: #fcfbf8;
+      --color-10: #b45309;
+
+      --bg-canvas: #f2efe9;
+      --bg-pattern: rgba(120, 113, 108, 0.06);
+      --bg-card: #fcfbf8;
+      --bg-card-sub: #f4f1ea;
+      --bg-input: #ffffff;
+      --bg-toolbar: rgba(252, 251, 248, 0.94);
+      --border-main: #cbc5b9;
+      --border-subtle: #ded9ce;
+      --text-primary: #1c2127;
+      --text-secondary: #4b5563;
+      --text-muted: #6b7280;
+      --accent-amber: #b45309;
+      --accent-amber-soft: rgba(180, 83, 9, 0.10);
+      --accent-amber-border: rgba(180, 83, 9, 0.40);
+      --accent-on-10: #ffffff;
+      --accent-moss: #15803d;
+      --accent-moss-soft: rgba(21, 128, 61, 0.10);
+      --accent-moss-border: rgba(21, 128, 61, 0.40);
+      --accent-danger: #dc2626;
+      --accent-danger-soft: rgba(220, 38, 38, 0.10);
+      --accent-dissonant: #7e22ce;
+      --accent-dissonant-soft: rgba(126, 34, 206, 0.08);
+      --accent-dissonant-border: rgba(126, 34, 206, 0.38);
+      --shadow-card: 0 4px 16px -4px rgba(28, 33, 39, 0.08);
     }
 
+    /* ==========================================================================
+       ESTILOS BASE & TEXTURA TÁTIL DE DIÁRIO DE CAMPO
+       ========================================================================== */
     body {
-      background-color: var(--color-60);
-      color: var(--text-main);
-      font-family: 'JetBrains Mono', 'Courier New', monospace;
-      font-size: 12px;
-      line-height: 1.4;
-      padding: 14px 16px 72px;
-      transition: background-color 0.15s ease, color 0.15s ease;
+      background-color: var(--bg-canvas);
+      background-image:
+        radial-gradient(var(--bg-pattern) 1px, transparent 1px),
+        radial-gradient(var(--bg-pattern) 1px, var(--bg-canvas) 1px);
+      background-size: 24px 24px;
+      background-position: 0 0, 12px 12px;
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+      transition: background-color 0.25s ease, color 0.25s ease;
+      overflow-x: hidden;
     }
 
-    .sheet-container {
-      max-width: 1080px;
-      margin: 0 auto;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
+    .dossier-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-main);
+      box-shadow: var(--shadow-card);
+      transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
     }
 
- 
-    .top-bar {
-      background-color: var(--color-30);
-      border: 1px solid var(--border-strong);
-      padding: 8px 12px;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
+    .dossier-subcard {
+      background-color: var(--bg-card-sub);
+      border: 1px solid var(--border-subtle);
     }
 
-    .theme-controls {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 8px;
+    .dossier-input {
+      background-color: var(--bg-input);
+      border: 1px solid var(--border-main);
+      color: var(--text-primary);
+      transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.25s ease;
     }
 
-    .picker-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background-color: var(--input-bg);
-      border: 1px solid var(--border-color);
-      padding: 3px 8px;
-      font-size: 10px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      cursor: pointer;
+    .dossier-input:focus {
+      outline: none;
+      border-color: var(--accent-amber);
+      box-shadow: 0 0 0 2px var(--accent-amber-soft);
     }
 
-    .picker-chip:hover {
-      border-color: var(--color-10);
+    .dossier-input::placeholder {
+      color: var(--text-muted);
+      opacity: 0.75;
     }
 
-    .picker-chip input[type="color"] {
+    /* Seletor nativo de cores 60/30/10 */
+    input[type="color"].color-swatch-input {
       -webkit-appearance: none;
       appearance: none;
-      width: 16px;
-      height: 16px;
-      border: 1px solid var(--border-strong);
-      background: transparent;
-      padding: 0;
+      width: 1.5rem;
+      height: 1.5rem;
+      border: 1.5px solid var(--border-main);
+      border-radius: 0.35rem;
+      background: none;
       cursor: pointer;
-    }
-
-    .picker-chip input[type="color"]::-webkit-color-swatch-wrapper {
       padding: 0;
     }
-
-    .picker-chip input[type="color"]::-webkit-color-swatch {
+    input[type="color"].color-swatch-input::-webkit-color-swatch-wrapper {
+      padding: 0;
+    }
+    input[type="color"].color-swatch-input::-webkit-color-swatch {
       border: none;
+      border-radius: 0.25rem;
     }
 
-    .preset-group,
-    .file-group {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .btn-mini {
-      background-color: var(--input-bg);
-      color: var(--text-main);
-      border: 1px solid var(--border-strong);
-      padding: 4px 8px;
-      font-family: inherit;
-      font-size: 10px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      cursor: pointer;
-      transition: background-color 0.12s, color 0.12s, border-color 0.12s;
-    }
-
-    .btn-mini:hover,
-    .btn-mini.active {
-      background-color: var(--color-10);
-      color: var(--text-on-accent);
-      border-color: var(--color-10);
-    }
-
-    .section-box {
-      background-color: var(--color-30);
-      border: 1px solid var(--border-strong);
-      padding: 12px 14px;
-    }
-
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid var(--border-color);
-      padding-bottom: 7px;
-      margin-bottom: 10px;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .section-title {
-      font-size: 12px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      display: flex;
-      align-items: center;
-      gap: 7px;
-    }
-
-    .section-title::before {
-      content: "";
-      display: inline-block;
-      width: 2px;
-      height: 12px;
-      background-color: var(--color-10);
-    }
-
-    .section-subtitle {
-      font-size: 9.5px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--text-muted);
-    }
-
-    .btn-header-action {
-      background-color: var(--input-bg);
-      color: var(--text-main);
-      border: 1px solid var(--border-strong);
-      padding: 3px 8px;
-      font-family: inherit;
-      font-size: 9.5px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      cursor: pointer;
-    }
-
-    .btn-header-action:hover {
-      border-color: var(--color-10);
-      color: var(--color-10);
-    }
-
-  
-    .field-group {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .micro-label {
-      font-size: 9px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--text-muted);
-    }
-
-    input[type="text"],
-    input[type="number"],
-    select,
-    textarea {
-      width: 100%;
-      background-color: var(--input-bg);
-      color: var(--text-main);
-      border: 1px solid var(--border-color);
-      padding: 6px 8px;
-      font-family: inherit;
-      font-size: 11px;
-      outline: none;
-    }
-
-    input[type="text"]::placeholder,
-    textarea::placeholder {
-      color: var(--text-muted);
-      opacity: 0.65;
-    }
-
-    input[type="text"]:focus,
-    input[type="number"]:focus,
-    select:focus,
-    textarea:focus {
-      border-color: var(--color-10);
-    }
-
-    textarea {
-      resize: vertical;
-      min-height: 54px;
-      line-height: 1.4;
-    }
-
+    /* Remove setas padrão feias de inputs numéricos mantendo acessibilidade */
     input[type="number"]::-webkit-inner-spin-button,
     input[type="number"]::-webkit-outer-spin-button {
       -webkit-appearance: none;
       margin: 0;
     }
-
-    .custom-check {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
-      user-select: none;
-      font-size: 10.5px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
+    input[type="number"] {
+      -moz-appearance: textfield;
     }
 
-    .custom-check input[type="checkbox"] {
+    /* Checkbox tátil personalizado */
+    .tactical-check {
       appearance: none;
       -webkit-appearance: none;
-      width: 13px;
-      height: 13px;
-      border: 1px solid var(--border-strong);
-      background-color: var(--input-bg);
-      cursor: pointer;
+      width: 1.2rem;
+      height: 1.2rem;
+      border: 1.5px solid var(--border-main);
+      background-color: var(--bg-input);
+      border-radius: 0.3rem;
       display: inline-grid;
       place-content: center;
-      flex-shrink: 0;
-    }
-
-    .custom-check input[type="checkbox"]:checked {
-      background-color: var(--color-10);
-      border-color: var(--color-10);
-    }
-
-    .custom-check input[type="checkbox"]:checked::after {
-      content: "X";
-      font-size: 9px;
-      font-weight: 800;
-      color: var(--text-on-accent);
-      line-height: 1;
-    }
-
-
-    .id-row-top {
-      display: grid;
-      grid-template-columns: 1.6fr 1.3fr 1.3fr 1.3fr 68px;
-      gap: 8px;
-      margin-bottom: 8px;
-    }
-
-    .id-row-top input[type="number"] {
-      text-align: center;
-      font-weight: 800;
-      font-size: 13px;
-    }
-
-    .id-row-bottom {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-
-    .attrs-grid {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 8px;
-    }
-
-    .attr-box {
-      background-color: var(--box-inner-bg);
-      border: 1px solid var(--border-color);
-      padding: 10px 8px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 7px;
-    }
-
-    .attr-name {
-      font-size: 10px;
-      font-weight: 800;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-
-    .attr-val {
-      width: 44px !important;
-      height: 36px;
-      text-align: center;
-      font-size: 16px !important;
-      font-weight: 800;
-      border-color: var(--border-strong) !important;
-    }
-
-    .btn-roll-attr {
-      background-color: var(--input-bg);
-      color: var(--text-main);
-      border: 1px solid var(--border-strong);
-      padding: 3px 10px;
-      font-family: inherit;
-      font-size: 9px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      cursor: pointer;
-    }
-
-    .btn-roll-attr:hover {
-      border-color: var(--color-10);
-      background-color: var(--color-10);
-      color: var(--text-on-accent);
-    }
-
-  
-    .three-col-grid {
-      display: grid;
-      grid-template-columns: 1.05fr 1.05fr 0.9fr;
-      gap: 12px;
-    }
-
-    .sub-card {
-      background-color: var(--box-inner-bg);
-      border: 1px solid var(--border-color);
-      padding: 8px 10px;
-      margin-bottom: 8px;
-    }
-
-    .sub-card:last-child {
-      margin-bottom: 0;
-    }
-
-    .sub-card-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 6px;
-    }
-
-    .status-badge {
-      font-size: 8.5px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      padding: 2px 6px;
-      border: 1px solid var(--status-green);
-      color: var(--status-green);
-    }
-
-    .status-badge.warn {
-      border-color: var(--color-10);
-      color: var(--color-10);
-    }
-
-    .status-badge.danger {
-      border-color: #ef4444;
-      color: #ef4444;
-    }
-
-    .stepper-row {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-bottom: 5px;
-    }
-
-    .btn-step {
-      width: 24px;
-      height: 24px;
-      background-color: var(--input-bg);
-      color: var(--text-main);
-      border: 1px solid var(--border-strong);
-      font-family: inherit;
-      font-weight: 800;
-      cursor: pointer;
-      display: grid;
-      place-content: center;
-    }
-
-    .btn-step:hover {
-      border-color: var(--color-10);
-      color: var(--color-10);
-    }
-
-    .stepper-num {
-      width: 38px !important;
-      height: 24px;
-      text-align: center;
-      font-weight: 800;
-      padding: 2px !important;
-    }
-
-    .micro-hint {
-      font-size: 9px;
-      color: var(--text-muted);
-    }
-
-    .reaction-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background-color: var(--box-inner-bg);
-      border: 1px solid var(--border-color);
-      padding: 7px 10px;
-    }
-
-    .cas-box {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 9.5px;
-      font-weight: 700;
-      color: var(--text-muted);
-    }
-
-    .cas-box input {
-      width: 34px;
-      height: 22px;
-      text-align: center;
-      padding: 2px;
-      font-weight: 800;
-    }
-
-    /* ROTINA */
-    .checks-inline {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 4px;
-    }
-
-    .state-pills {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 4px;
-    }
-
-    .state-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      padding: 3px 7px;
-      border: 1px solid var(--border-color);
-      background-color: var(--input-bg);
-      font-size: 9.5px;
-      font-weight: 700;
-      text-transform: uppercase;
-      cursor: pointer;
-      color: var(--text-muted);
-    }
-
-    .state-pill.active {
-      border-color: var(--status-green);
-      color: var(--status-green);
-    }
-
-    .state-pill.active[data-state="instavel"] {
-      border-color: var(--color-10);
-      color: var(--color-10);
-    }
-
-    .state-pill.active[data-state="desgaste"] {
-      border-color: #ef4444;
-      color: #ef4444;
-    }
-
-    .wear-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 5px;
-    }
-
-  
-    .defense-box {
-      background-color: var(--box-inner-bg);
-      border: 1px solid var(--border-color);
-      padding: 9px 10px;
-      margin-bottom: 8px;
-    }
-
-    .defense-box:last-child {
-      margin-bottom: 0;
-    }
-
-    .defense-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 8px;
-    }
-
-    .defense-title {
-      font-size: 10.5px;
-      font-weight: 800;
-      text-transform: uppercase;
-    }
-
-    .defense-sub {
-      font-size: 9px;
-      color: var(--text-muted);
-    }
-
-    .defense-controls {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .dice-count-group,
-    .posture-group {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 10px;
-      color: var(--text-muted);
-    }
-
-    .defense-controls input {
-      width: 36px;
-      height: 24px;
-      text-align: center;
-      font-weight: 800;
-      padding: 2px;
-    }
-
-
-    .skills-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 6px;
-    }
-
-    .skill-item {
-      background-color: var(--box-inner-bg);
-      border: 1px solid var(--border-color);
-      padding: 5px 7px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 6px;
-    }
-
-    .skill-item:hover {
-      border-color: var(--border-strong);
-    }
-
-    .skill-left {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      min-width: 0;
-      flex: 1;
-    }
-
-    .skill-label-text {
-      font-size: 10px;
-      font-weight: 700;
-      text-transform: uppercase;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .prof-inline-input {
-      padding: 2px 5px !important;
-      font-size: 9.5px !important;
-      height: 20px;
-      min-width: 55px;
-    }
-
-    .btn-rol-tag {
-      background-color: transparent;
-      color: var(--color-10);
-      border: 1px solid var(--color-10);
-      padding: 2px 6px;
-      font-family: inherit;
-      font-size: 9px;
-      font-weight: 800;
-      text-transform: uppercase;
       cursor: pointer;
       flex-shrink: 0;
+      transition: all 0.15s ease;
     }
 
-    .btn-rol-tag:hover {
-      background-color: var(--color-10);
-      color: var(--text-on-accent);
+    .tactical-check:hover {
+      border-color: var(--accent-amber);
     }
 
- 
-    .two-col-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
+    .tactical-check::before {
+      content: "";
+      width: 0.68rem;
+      height: 0.68rem;
+      transform: scale(0);
+      transition: transform 0.14s ease-in-out;
+      background-color: currentColor;
+      clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
     }
 
-    .two-col-grid .section-box {
-      display: flex;
-      flex-direction: column;
+    .tactical-check:checked {
+      background-color: var(--accent-amber-soft);
+      border-color: var(--accent-amber);
+      color: var(--accent-amber);
     }
 
-    .two-col-grid textarea {
-      flex: 1;
-      min-height: 112px;
+    .tactical-check:checked::before {
+      transform: scale(1);
     }
 
-    .alteracao-stack {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+    .tactical-check-moss:checked {
+      background-color: var(--accent-moss-soft);
+      border-color: var(--accent-moss);
+      color: var(--accent-moss);
     }
 
-  
-    .dynamic-list {
-      display: flex;
-      flex-direction: column;
-      gap: 7px;
+    .tactical-check-danger:checked {
+      background-color: var(--accent-danger-soft);
+      border-color: var(--accent-danger);
+      color: var(--accent-danger);
     }
 
-    .power-row {
-      background-color: var(--box-inner-bg);
-      border: 1px solid var(--border-color);
-      padding: 7px 8px;
-      display: grid;
-      grid-template-columns: 46px 1.2fr 0.9fr 2fr 24px;
-      gap: 7px;
-      align-items: end;
+    /* Destaque sutil para Dissonante */
+    .dissonant-active {
+      border-color: var(--accent-dissonant-border) !important;
+      background: linear-gradient(145deg, var(--bg-card) 0%, var(--accent-dissonant-soft) 100%) !important;
     }
 
-    .power-row input[type="number"] {
-      text-align: center;
-      font-weight: 800;
+    /* Animação suave de rolagem de dados */
+    @keyframes diePop {
+      0% { transform: scale(0.72) rotate(-14deg); opacity: 0.3; }
+      65% { transform: scale(1.08) rotate(4deg); opacity: 1; }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+    .die-animate {
+      animation: diePop 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
 
-    .btn-del-row {
-      width: 24px;
-      height: 26px;
-      background-color: var(--input-bg);
-      color: var(--color-10);
-      border: 1px solid var(--color-10);
-      font-family: inherit;
-      font-size: 10px;
-      font-weight: 800;
-      cursor: pointer;
-      display: grid;
-      place-content: center;
-    }
-
-    .btn-del-row:hover {
-      background-color: var(--color-10);
-      color: var(--text-on-accent);
-    }
-
-  
-    .sub-block-title {
-      font-size: 9px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--text-muted);
-      margin-bottom: 5px;
-      margin-top: 10px;
-    }
-
-    .sub-block-title:first-child {
-      margin-top: 0;
-    }
-
-    .prof-bar {
-      background-color: var(--box-inner-bg);
-      border: 1px solid var(--border-color);
-      padding: 7px 12px;
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-    }
-
-    .weapon-row {
-      background-color: var(--box-inner-bg);
-      border: 1px solid var(--border-color);
-      padding: 7px 8px;
-      display: grid;
-      grid-template-columns: 1.4fr 0.65fr 0.45fr 0.85fr 1fr 1.1fr 24px;
-      gap: 6px;
-      align-items: end;
-    }
-
-    .weapon-row .center-input {
-      text-align: center;
-      font-weight: 700;
-    }
-
-    .armor-bar {
-      background-color: var(--box-inner-bg);
-      border: 1px solid var(--border-color);
-      padding: 7px 8px;
-      display: grid;
-      grid-template-columns: 1.1fr 2fr 54px;
-      gap: 8px;
-      align-items: end;
-    }
-
-    .armor-bar input[type="number"] {
-      text-align: center;
-      font-weight: 800;
-    }
-
-    .supplies-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-    }
-
-    .supply-box {
-      background-color: var(--box-inner-bg);
-      border: 1px solid var(--border-color);
-      padding: 7px 8px;
-    }
-
-    .supply-stepper {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-top: 5px;
-    }
-
- 
-    .bond-row {
-      background-color: var(--box-inner-bg);
-      border: 1px solid var(--border-color);
-      padding: 7px 8px;
-      display: grid;
-      grid-template-columns: 1fr 1.8fr 24px;
-      gap: 8px;
-      align-items: end;
-    }
-
-
-    .roll-toast {
-      position: fixed;
-      bottom: 16px;
-      right: 16px;
-      width: 330px;
-      max-width: calc(100vw - 32px);
-      background-color: var(--color-30);
-      border: 1.5px solid var(--color-10);
-      box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.7);
-      padding: 10px 12px;
-      z-index: 999;
-      display: none;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .roll-toast.visible {
-      display: flex;
-    }
-
-    .roll-toast-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid var(--border-color);
-      padding-bottom: 4px;
-    }
-
-    .roll-toast-title {
-      font-size: 10px;
-      font-weight: 800;
-      text-transform: uppercase;
-      color: var(--color-10);
-      letter-spacing: 0.06em;
-    }
-
-    .roll-toast-actions {
-      display: flex;
-      gap: 4px;
-    }
-
-    .roll-toast-body {
-      font-size: 11px;
-      line-height: 1.45;
-    }
-
-    .roll-dice-pills {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 5px;
-      margin-top: 2px;
-    }
-
-    .die-chip {
-      padding: 2px 7px;
-      border: 1px solid var(--border-strong);
-      background-color: var(--input-bg);
-      font-weight: 800;
-      font-size: 12px;
-    }
-
-    .die-chip.success {
-      background-color: var(--color-10);
-      color: var(--text-on-accent);
-      border-color: var(--color-10);
-    }
-
-   
-    @media (max-width: 860px) {
-      .id-row-top {
-        grid-template-columns: 1fr 1fr;
+    /* ==========================================================================
+       ESTILOS DE IMPRESSÃO / EXPORTAÇÃO PDF EM FOLHA A4
+       ========================================================================== */
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 9mm;
       }
-      .three-col-grid,
-      .two-col-grid {
-        grid-template-columns: 1fr;
-      }
-      .skills-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-      .weapon-row {
-        grid-template-columns: 1fr 1fr;
-      }
-      .power-row {
-        grid-template-columns: 50px 1fr;
-      }
-    }
 
-    @media (max-width: 560px) {
-      .attrs-grid {
-        grid-template-columns: repeat(2, 1fr);
+      html, body {
+        background: #ffffff !important;
+        background-image: none !important;
+        color: #111827 !important;
+        font-size: 9.5pt !important;
+        line-height: 1.3 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
       }
-      .skills-grid,
-      .prof-bar,
-      .supplies-grid,
-      .id-row-bottom {
-        grid-template-columns: 1fr;
+
+      .no-print {
+        display: none !important;
+      }
+
+      main {
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+
+      .dossier-card {
+        background: #ffffff !important;
+        border: 1px solid #9ca3af !important;
+        box-shadow: none !important;
+        break-inside: avoid;
+        page-break-inside: avoid;
+        margin-bottom: 8px !important;
+        padding: 10px 12px !important;
+      }
+
+      .dossier-subcard {
+        background: #f9fafb !important;
+        border: 1px solid #d1d5db !important;
+      }
+
+      .dossier-input {
+        background: transparent !important;
+        border: none !important;
+        border-bottom: 1px solid #9ca3af !important;
+        border-radius: 0 !important;
+        color: #111827 !important;
+        padding: 2px 4px !important;
+        box-shadow: none !important;
+      }
+
+      textarea.dossier-input {
+        border: 1px solid #d1d5db !important;
+        border-radius: 4px !important;
+        resize: none !important;
+        overflow: visible !important;
+      }
+
+      .tactical-check {
+        border: 1.5px solid #374151 !important;
+        background: #ffffff !important;
+        width: 0.95rem !important;
+        height: 0.95rem !important;
+      }
+
+      .tactical-check:checked {
+        background: #e5e7eb !important;
+        color: #111827 !important;
+      }
+
+      .print-grid-3 {
+        display: grid !important;
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        gap: 8px !important;
+      }
+
+      .print-grid-5 {
+        display: grid !important;
+        grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+        gap: 6px !important;
       }
     }
   </style>
 </head>
-<body>
+<body class="min-h-screen antialiased pb-16">
 
-  <main class="sheet-container">
-    <
-    <header class="top-bar" aria-label="Customização de Cores e Arquivo">
-      <div class="theme-controls">
-        <label class="picker-chip" title="60% Fundo Geral">
-          <input type="color" id="pick-60" value="#121210" />
-          <span>60% Fundo</span>
-        </label>
-        <label class="picker-chip" title="30% Superfície dos Blocos">
-          <input type="color" id="pick-30" value="#1a1916" />
-          <span>30% Superfície</span>
-        </label>
-        <label class="picker-chip" title="10% Cor de Destaque">
-          <input type="color" id="pick-10" value="#d97724" />
-          <span>10% Destaque</span>
-        </label>
+  <!-- ==========================================================================
+       BARRA DE FERRAMENTAS SUPERIOR FIXA (OCULTA NA IMPRESSÃO)
+       ========================================================================== -->
+  <header class="no-print sticky top-0 z-40 border-b backdrop-blur-md" style="background-color: var(--bg-toolbar); border-color: var(--border-main);">
+    <div class="max-w-6xl mx-auto px-3 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-2">
+      
+      <!-- Marca & Indicador de Auto-Save -->
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full inline-block" style="background-color: var(--accent-amber);"></span>
+          <span class="font-display font-bold tracking-wider uppercase text-xs sm:text-sm" style="color: var(--text-primary);">
+            Dossiê de Sobrevivência
+          </span>
+        </div>
 
-        <div class="preset-group" role="group" aria-label="Presets de Tema">
-          <button type="button" class="btn-mini active" data-preset="ambar">Padrão (Âmbar)</button>
-          <button type="button" class="btn-mini" data-preset="sucata">Sucata</button>
-          <button type="button" class="btn-mini" data-preset="verde">Terminal Verde</button>
-          <button type="button" class="btn-mini" data-preset="papel">Papel de Campo</button>
+        <div id="save-indicator" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border" style="background-color: var(--accent-moss-soft); border-color: var(--accent-moss-border); color: var(--accent-moss);">
+          <span id="save-dot" class="w-1.5 h-1.5 rounded-full animate-pulse" style="background-color: var(--accent-moss);"></span>
+          <span id="save-text">Salvo no navegador</span>
         </div>
       </div>
 
-      <div class="file-group">
-        <button type="button" class="btn-mini" id="btn-export">Exportar JSON</button>
-        <button type="button" class="btn-mini" id="btn-import">Importar JSON</button>
-        <input type="file" id="file-import" accept=".json" style="display: none;" />
-        <button type="button" class="btn-mini" id="btn-clear">Limpar Ficha</button>
+      <!-- Ações Rápidas -->
+      <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+        <!-- Botão Rolar d6 -->
+        <button type="button" onclick="openDiceModal()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition hover:brightness-110 active:scale-95" style="background-color: var(--accent-amber); color: var(--accent-on-10);">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="3"></rect>
+            <circle cx="8.5" cy="8.5" r="1.2" fill="currentColor"></circle>
+            <circle cx="15.5" cy="8.5" r="1.2" fill="currentColor"></circle>
+            <circle cx="12" cy="12" r="1.2" fill="currentColor"></circle>
+            <circle cx="8.5" cy="15.5" r="1.2" fill="currentColor"></circle>
+            <circle cx="15.5" cy="15.5" r="1.2" fill="currentColor"></circle>
+          </svg>
+          <span>Rolar d6</span>
+        </button>
+
+        <!-- Botão Abrir/Fechar Customizador 60/30/10 -->
+        <button type="button" onclick="toggleCustomizerBar()" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition hover:opacity-90" style="background-color: var(--bg-card-sub); border-color: var(--border-main); color: var(--text-primary);" title="Personalizar paleta de cores 60/30/10">
+          <span class="w-2.5 h-2.5 rounded-full border border-white/30" style="background-color: var(--accent-amber);"></span>
+          <span>Cores 60/30/10</span>
+        </button>
+
+        <!-- Alternador Rápido de Tema -->
+        <button type="button" id="theme-toggle-btn" onclick="toggleTheme()" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition hover:opacity-90" style="background-color: var(--bg-card-sub); border-color: var(--border-main); color: var(--text-primary);" title="Alternar entre Modo Noturno e Modo Papel">
+          <svg id="theme-icon-sun" class="w-4 h-4 hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>
+          </svg>
+          <svg id="theme-icon-moon" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+          </svg>
+          <span id="theme-label" class="hidden md:inline">Modo Papel</span>
+        </button>
+
+        <!-- Exportar JSON -->
+        <button type="button" onclick="exportJSON()" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition hover:opacity-90" style="background-color: var(--bg-card-sub); border-color: var(--border-main); color: var(--text-primary);" title="Baixar backup da ficha em arquivo JSON">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path>
+          </svg>
+          <span class="hidden sm:inline">Exportar JSON</span>
+        </button>
+
+        <!-- Importar JSON -->
+        <button type="button" onclick="document.getElementById('import-file-input').click()" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition hover:opacity-90" style="background-color: var(--bg-card-sub); border-color: var(--border-main); color: var(--text-primary);" title="Carregar ficha de um arquivo JSON">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"></path>
+          </svg>
+          <span class="hidden sm:inline">Importar JSON</span>
+        </button>
+        <input type="file" id="import-file-input" accept=".json,application/json" class="hidden" onchange="importJSON(event)" />
+
+        <!-- Imprimir / Salvar PDF -->
+        <button type="button" onclick="printSheet()" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition hover:opacity-90" style="background-color: var(--bg-card-sub); border-color: var(--border-main); color: var(--text-primary);" title="Imprimir ou Salvar como PDF (A4)">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 6 2 18 2 18 9"></polyline>
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+            <rect x="6" y="14" width="12" height="8"></rect>
+          </svg>
+          <span class="hidden lg:inline">Imprimir / PDF</span>
+        </button>
+
+        <!-- Limpar Ficha -->
+        <button type="button" onclick="openConfirmClearModal()" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition hover:opacity-90" style="background-color: var(--accent-danger-soft); border-color: rgba(239,68,68,0.35); color: var(--accent-danger);" title="Zerar todos os dados da ficha">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m5 0V4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2"></path>
+          </svg>
+          <span class="hidden sm:inline">Limpar</span>
+        </button>
       </div>
-    </header>
+    </div>
 
-    <!-- 1. IDENTIFICAÇÃO -->
-    <section class="section-box" aria-label="Identificação">
-      <div class="section-header">
-        <h2 class="section-title">IDENTIFICAÇÃO</h2>
-        <span class="section-subtitle">REGISTRO DE SOBREVIVENTE</span>
-      </div>
+    <!-- Barra Expansível de Customização de Cores 60/30/10 -->
+    <div id="customizer-panel" class="hidden border-t" style="background-color: var(--bg-card); border-color: var(--border-subtle);">
+      <div class="max-w-6xl mx-auto px-3 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-3">
+        <!-- Seletores 60 / 30 / 10 -->
+        <div class="flex flex-wrap items-center gap-3 sm:gap-4">
+          <span class="text-[11px] font-mono font-bold uppercase tracking-wider" style="color: var(--accent-amber);">Paleta 60/30/10:</span>
 
-      <div class="id-row-top">
-        <div class="field-group">
-          <label class="micro-label" for="f-nome">NOME</label>
-          <input type="text" id="f-nome" data-field="nome" placeholder="Nome do personagem" />
-        </div>
-        <div class="field-group">
-          <label class="micro-label" for="f-jogador">JOGADOR</label>
-          <input type="text" id="f-jogador" data-field="jogador" placeholder="Nome do jogador" />
-        </div>
-        <div class="field-group">
-          <label class="micro-label" for="f-antecedente">ANTECEDENTE</label>
-          <input type="text" id="f-antecedente" data-field="antecedente" placeholder="Ex.: Paramédico, Pardal" />
-        </div>
-        <div class="field-group">
-          <label class="micro-label" for="f-classe">CLASSE / CAMINHO</label>
-          <input type="text" id="f-classe" data-field="classe" placeholder="Vanguarda, Dissonante..." />
-        </div>
-        <div class="field-group">
-          <label class="micro-label" for="f-nivel">NÍVEL</label>
-          <input type="number" id="f-nivel" data-field="nivel" min="1" value="1" />
-        </div>
-      </div>
-
-      <div class="id-row-bottom">
-        <div class="field-group">
-          <label class="micro-label" for="f-passado">QUEM EU ERA ANTES DO FIM</label>
-          <textarea id="f-passado" data-field="passado" placeholder="Passado, ofício e vida antes da ruptura..."></textarea>
-        </div>
-        <div class="field-group">
-          <label class="micro-label" for="f-proteger">O QUE AINDA QUERO PROTEGER</label>
-          <textarea id="f-proteger" data-field="proteger" placeholder="Pessoas, promessas ou princípios que mantêm você vivo..."></textarea>
-        </div>
-      </div>
-    </section>
-
-    <!-- 2. ATRIBUTOS -->
-    <section class="section-box" aria-label="Atributos">
-      <div class="section-header">
-        <h2 class="section-title">ATRIBUTOS</h2>
-        <span class="section-subtitle">CLIQUE NO BOTÃO PARA ROLAR 1D6 NO CHAT</span>
-      </div>
-
-      <div class="attrs-grid">
-        <div class="attr-box">
-          <span class="attr-name">FORÇA</span>
-          <input type="number" class="attr-val" data-attr="forca" value="1" min="0" max="10" />
-          <button type="button" class="btn-roll-attr" onclick="rollSingleDie('Atributo: FORÇA', 'forca')">ROLAR 1D6</button>
-        </div>
-        <div class="attr-box">
-          <span class="attr-name">COGNIÇÃO</span>
-          <input type="number" class="attr-val" data-attr="cognicao" value="1" min="0" max="10" />
-          <button type="button" class="btn-roll-attr" onclick="rollSingleDie('Atributo: COGNIÇÃO', 'cognicao')">ROLAR 1D6</button>
-        </div>
-        <div class="attr-box">
-          <span class="attr-name">AGILIDADE</span>
-          <input type="number" class="attr-val" data-attr="agilidade" value="1" min="0" max="10" />
-          <button type="button" class="btn-roll-attr" onclick="rollSingleDie('Atributo: AGILIDADE', 'agilidade')">ROLAR 1D6</button>
-        </div>
-        <div class="attr-box">
-          <span class="attr-name">VIGOR</span>
-          <input type="number" class="attr-val" data-attr="vigor" value="1" min="0" max="10" />
-          <button type="button" class="btn-roll-attr" onclick="rollSingleDie('Atributo: VIGOR', 'vigor')">ROLAR 1D6</button>
-        </div>
-        <div class="attr-box">
-          <span class="attr-name">MENTE</span>
-          <input type="number" class="attr-val" data-attr="mente" value="1" min="0" max="10" />
-          <button type="button" class="btn-roll-attr" onclick="rollSingleDie('Atributo: MENTE', 'mente')">ROLAR 1D6</button>
-        </div>
-      </div>
-    </section>
-
-   
-    <div class="three-col-grid">
-      <!-- COLUNA 1: RECURSOS -->
-      <section class="section-box" aria-label="Recursos">
-        <div class="section-header">
-          <h2 class="section-title">RECURSOS</h2>
-        </div>
-
-        <div class="sub-card">
-          <div class="sub-card-top">
-            <span class="micro-label">INTEGRIDADE</span>
-            <span class="status-badge" id="badge-integridade">SAUDÁVEL</span>
-          </div>
-          <div class="stepper-row">
-            <button type="button" class="btn-step" onclick="stepNumber('intCur', -1)">-</button>
-            <input type="number" class="stepper-num" id="f-intCur" data-field="intCur" value="10" />
-            <span>/</span>
-            <input type="number" class="stepper-num" id="f-intMax" data-field="intMax" value="10" />
-            <button type="button" class="btn-step" onclick="stepNumber('intCur', 1)">+</button>
-          </div>
-          <div class="micro-hint">Perde abaixo da metade • Morrendo em 0</div>
-        </div>
-
-        <div class="sub-card">
-          <div class="sub-card-top">
-            <span class="micro-label">PULSO</span>
-            <span class="status-badge" id="badge-pulso">ATIVO</span>
-          </div>
-          <div class="stepper-row">
-            <button type="button" class="btn-step" onclick="stepNumber('pulsoCur', -1)">-</button>
-            <input type="number" class="stepper-num" id="f-pulsoCur" data-field="pulsoCur" value="4" />
-            <span>/</span>
-            <input type="number" class="stepper-num" id="f-pulsoMax" data-field="pulsoMax" value="4" />
-            <button type="button" class="btn-step" onclick="stepNumber('pulsoCur', 1)">+</button>
-          </div>
-          <div class="micro-hint">Colapso em 0</div>
-        </div>
-
-        <div class="reaction-row">
-          <label class="custom-check">
-            <input type="checkbox" id="f-reacao" data-bool="reacao" checked />
-            <span>REAÇÃO DISPONÍVEL</span>
+          <label class="flex items-center gap-1.5 text-xs font-medium cursor-pointer" title="60% — Fundo principal">
+            <input type="color" id="pick-60" value="#0e1318" class="color-swatch-input" />
+            <span>60% Fundo</span>
           </label>
-          <div class="cas-box">
-            <span>CAs</span>
-            <input type="number" id="f-cas" data-field="cas" value="0" />
+
+          <label class="flex items-center gap-1.5 text-xs font-medium cursor-pointer" title="30% — Cartões e superfícies">
+            <input type="color" id="pick-30" value="#161e27" class="color-swatch-input" />
+            <span>30% Superfície</span>
+          </label>
+
+          <label class="flex items-center gap-1.5 text-xs font-medium cursor-pointer" title="10% — Destaques, botões e bordas ativas">
+            <input type="color" id="pick-10" value="#f59e0b" class="color-swatch-input" />
+            <span>10% Destaque</span>
+          </label>
+        </div>
+
+        <!-- Presets Rápidos -->
+        <div class="flex flex-wrap items-center gap-1.5">
+          <button type="button" onclick="applyPreset('ardosia')" class="px-2.5 py-1 rounded-md text-[11px] font-mono font-semibold border transition hover:opacity-85" style="background-color: var(--bg-card-sub); border-color: var(--border-main); color: var(--text-primary);">Ardósia</button>
+          <button type="button" onclick="applyPreset('sucata')" class="px-2.5 py-1 rounded-md text-[11px] font-mono font-semibold border transition hover:opacity-85" style="background-color: var(--bg-card-sub); border-color: var(--border-main); color: var(--text-primary);">Sucata</button>
+          <button type="button" onclick="applyPreset('ambar')" class="px-2.5 py-1 rounded-md text-[11px] font-mono font-semibold border transition hover:opacity-85" style="background-color: var(--bg-card-sub); border-color: var(--border-main); color: var(--text-primary);">Terminal Âmbar</button>
+          <button type="button" onclick="applyPreset('papel')" class="px-2.5 py-1 rounded-md text-[11px] font-mono font-semibold border transition hover:opacity-85" style="background-color: var(--bg-card-sub); border-color: var(--border-main); color: var(--text-primary);">Papel de Campo</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       CONTEÚDO PRINCIPAL DA FICHA DE PERSONAGEM
+       ========================================================================== -->
+  <main class="max-w-5xl mx-auto px-3 sm:px-6 pt-6 space-y-5">
+
+    <!-- ========================================================================
+         1. CABEÇALHO & IDENTIFICAÇÃO
+         ======================================================================== -->
+    <section class="dossier-card rounded-xl p-4 sm:p-6">
+      <div class="flex flex-wrap items-center justify-between gap-2 pb-3 mb-4 border-b" style="border-color: var(--border-subtle);">
+        <div>
+          <span class="text-[11px] font-mono uppercase tracking-widest font-semibold" style="color: var(--accent-amber);">Registro de Sobrevivente // Arquivo Ativo</span>
+          <h1 class="font-display text-xl sm:text-2xl font-bold tracking-tight" style="color: var(--text-primary);">Ficha de Personagem</h1>
+        </div>
+        <div class="flex items-center gap-2">
+          <label for="field-nivel" class="text-xs font-mono uppercase tracking-wider font-semibold" style="color: var(--text-secondary);">Nível</label>
+          <input id="field-nivel" type="number" min="0" max="99" data-path="identificacao.nivel" class="dossier-input w-16 text-center font-mono text-lg font-bold rounded-lg py-1 px-2" placeholder="1" />
+        </div>
+      </div>
+
+      <!-- Grade de Identificação -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 mb-4">
+        <div>
+          <label for="field-nome" class="block text-xs font-semibold uppercase tracking-wider mb-1" style="color: var(--text-secondary);">Nome</label>
+          <input id="field-nome" type="text" data-path="identificacao.nome" class="dossier-input w-full rounded-lg px-3 py-2 text-sm font-medium" placeholder="Nome do personagem" />
+        </div>
+
+        <div>
+          <label for="field-jogador" class="block text-xs font-semibold uppercase tracking-wider mb-1" style="color: var(--text-secondary);">Jogador</label>
+          <input id="field-jogador" type="text" data-path="identificacao.jogador" class="dossier-input w-full rounded-lg px-3 py-2 text-sm" placeholder="Seu nome" />
+        </div>
+
+        <div>
+          <label for="field-antecedente" class="block text-xs font-semibold uppercase tracking-wider mb-1" style="color: var(--text-secondary);">Antecedente</label>
+          <input id="field-antecedente" type="text" data-path="identificacao.antecedente" class="dossier-input w-full rounded-lg px-3 py-2 text-sm" placeholder="Ex.: Socorrista, Mecânico..." />
+        </div>
+
+        <div>
+          <label for="field-classe" class="block text-xs font-semibold uppercase tracking-wider mb-1" style="color: var(--text-secondary);">Classe / Caminho</label>
+          <input id="field-classe" type="text" list="classes-sugestoes" data-path="identificacao.classe" class="dossier-input w-full rounded-lg px-3 py-2 text-sm font-medium" placeholder="Vanguarda, Dissonante..." />
+          <datalist id="classes-sugestoes">
+            <option value="Vanguarda"></option>
+            <option value="Dissonante"></option>
+            <option value="Astuto"></option>
+            <option value="Técnico"></option>
+          </datalist>
+        </div>
+      </div>
+
+      <!-- História & Motivação -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+        <div>
+          <label for="field-antes" class="block text-xs font-semibold uppercase tracking-wider mb-1" style="color: var(--text-secondary);">Quem eu era antes do fim</label>
+          <textarea id="field-antes" rows="2" data-path="identificacao.antesDoFim" class="dossier-input auto-grow w-full rounded-lg px-3 py-2 text-sm" placeholder="Sua antiga profissão, rotina e memórias antes da ruptura..."></textarea>
+        </div>
+
+        <div>
+          <label for="field-proteger" class="block text-xs font-semibold uppercase tracking-wider mb-1" style="color: var(--text-secondary);">O que ainda quero proteger</label>
+          <textarea id="field-proteger" rows="2" data-path="identificacao.queroProteger" class="dossier-input auto-grow w-full rounded-lg px-3 py-2 text-sm" placeholder="Pessoas, promessas ou valores que mantêm você seguindo em frente..."></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================
+         2. ATRIBUTOS (5 CARTÕES COM ROLAGEM RÁPIDA DE Xd6)
+         ======================================================================== -->
+    <section class="dossier-card rounded-xl p-4 sm:p-5">
+      <div class="flex items-center justify-between mb-3.5">
+        <h2 class="font-display text-base sm:text-lg font-bold uppercase tracking-wider flex items-center gap-2" style="color: var(--text-primary);">
+          <span class="w-2 h-2 rounded-sm inline-block" style="background-color: var(--accent-amber);"></span>
+          Atributos
+        </h2>
+        <span class="text-xs font-mono no-print" style="color: var(--text-muted);">Clique no dado para rolar Xd6</span>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 print-grid-5">
+        <!-- Força -->
+        <div class="dossier-subcard rounded-xl p-3 flex flex-col items-center text-center relative group">
+          <label for="attr-forca" class="text-xs font-bold uppercase tracking-wider mb-1.5" style="color: var(--text-secondary);">Força</label>
+          <input id="attr-forca" type="number" min="0" max="20" data-path="atributos.forca" class="dossier-input w-20 h-14 text-center font-mono text-2xl sm:text-3xl font-bold rounded-xl" />
+          <button type="button" onclick="rollFromAttribute('forca', 'Força')" class="no-print mt-2 inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-mono font-semibold border transition hover:brightness-110" style="background-color: var(--accent-amber-soft); border-color: var(--accent-amber-border); color: var(--accent-amber);">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>
+            <span id="roll-label-forca">1d6</span>
+          </button>
+        </div>
+
+        <!-- Cognição -->
+        <div class="dossier-subcard rounded-xl p-3 flex flex-col items-center text-center relative group">
+          <label for="attr-cognicao" class="text-xs font-bold uppercase tracking-wider mb-1.5" style="color: var(--text-secondary);">Cognição</label>
+          <input id="attr-cognicao" type="number" min="0" max="20" data-path="atributos.cognicao" class="dossier-input w-20 h-14 text-center font-mono text-2xl sm:text-3xl font-bold rounded-xl" />
+          <button type="button" onclick="rollFromAttribute('cognicao', 'Cognição')" class="no-print mt-2 inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-mono font-semibold border transition hover:brightness-110" style="background-color: var(--accent-amber-soft); border-color: var(--accent-amber-border); color: var(--accent-amber);">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>
+            <span id="roll-label-cognicao">1d6</span>
+          </button>
+        </div>
+
+        <!-- Agilidade -->
+        <div class="dossier-subcard rounded-xl p-3 flex flex-col items-center text-center relative group">
+          <label for="attr-agilidade" class="text-xs font-bold uppercase tracking-wider mb-1.5" style="color: var(--text-secondary);">Agilidade</label>
+          <input id="attr-agilidade" type="number" min="0" max="20" data-path="atributos.agilidade" class="dossier-input w-20 h-14 text-center font-mono text-2xl sm:text-3xl font-bold rounded-xl" />
+          <button type="button" onclick="rollFromAttribute('agilidade', 'Agilidade')" class="no-print mt-2 inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-mono font-semibold border transition hover:brightness-110" style="background-color: var(--accent-amber-soft); border-color: var(--accent-amber-border); color: var(--accent-amber);">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>
+            <span id="roll-label-agilidade">1d6</span>
+          </button>
+        </div>
+
+        <!-- Vigor -->
+        <div class="dossier-subcard rounded-xl p-3 flex flex-col items-center text-center relative group">
+          <label for="attr-vigor" class="text-xs font-bold uppercase tracking-wider mb-1.5" style="color: var(--text-secondary);">Vigor</label>
+          <input id="attr-vigor" type="number" min="0" max="20" data-path="atributos.vigor" class="dossier-input w-20 h-14 text-center font-mono text-2xl sm:text-3xl font-bold rounded-xl" />
+          <button type="button" onclick="rollFromAttribute('vigor', 'Vigor')" class="no-print mt-2 inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-mono font-semibold border transition hover:brightness-110" style="background-color: var(--accent-amber-soft); border-color: var(--accent-amber-border); color: var(--accent-amber);">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>
+            <span id="roll-label-vigor">1d6</span>
+          </button>
+        </div>
+
+        <!-- Mente -->
+        <div class="dossier-subcard rounded-xl p-3 flex flex-col items-center text-center relative group col-span-2 sm:col-span-1">
+          <label for="attr-mente" class="text-xs font-bold uppercase tracking-wider mb-1.5" style="color: var(--text-secondary);">Mente</label>
+          <input id="attr-mente" type="number" min="0" max="20" data-path="atributos.mente" class="dossier-input w-20 h-14 text-center font-mono text-2xl sm:text-3xl font-bold rounded-xl" />
+          <button type="button" onclick="rollFromAttribute('mente', 'Mente')" class="no-print mt-2 inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-mono font-semibold border transition hover:brightness-110" style="background-color: var(--accent-amber-soft); border-color: var(--accent-amber-border); color: var(--accent-amber);">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>
+            <span id="roll-label-mente">1d6</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================
+         3. RECURSOS, ROTINA E DEFESAS
+         ======================================================================== -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 print-grid-3">
+      
+      <!-- 3A. RECURSOS -->
+      <section class="dossier-card rounded-xl p-4 sm:p-5 flex flex-col justify-between space-y-4">
+        <div>
+          <h2 class="font-display text-base sm:text-lg font-bold uppercase tracking-wider flex items-center gap-2 mb-3.5" style="color: var(--text-primary);">
+            <span class="w-2 h-2 rounded-sm inline-block" style="background-color: var(--accent-moss);"></span>
+            Recursos
+          </h2>
+
+          <!-- Integridade -->
+          <div class="dossier-subcard rounded-lg p-3 mb-3">
+            <div class="flex items-center justify-between gap-2 mb-1.5">
+              <span class="text-xs font-bold uppercase tracking-wider" style="color: var(--text-secondary);">Integridade</span>
+              <span id="badge-integridade" class="px-2 py-0.5 rounded text-[11px] font-mono font-bold uppercase tracking-wide">Saudável</span>
+            </div>
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-1.5">
+                <button type="button" onclick="adjustNumber('recursos.integridadeAtual', -1)" class="no-print w-8 h-8 rounded-lg border font-mono font-bold text-base flex items-center justify-center hover:opacity-80" style="background-color: var(--bg-input); border-color: var(--border-main);">-</button>
+                <input type="number" min="0" data-path="recursos.integridadeAtual" aria-label="Integridade Atual" class="dossier-input w-14 h-9 text-center font-mono text-lg font-bold rounded-lg" />
+                <span class="font-mono text-base font-bold" style="color: var(--text-muted);">/</span>
+                <input type="number" min="0" data-path="recursos.integridadeMax" aria-label="Integridade Máxima" class="dossier-input w-14 h-9 text-center font-mono text-lg font-bold rounded-lg" />
+                <button type="button" onclick="adjustNumber('recursos.integridadeAtual', 1)" class="no-print w-8 h-8 rounded-lg border font-mono font-bold text-base flex items-center justify-center hover:opacity-80" style="background-color: var(--bg-input); border-color: var(--border-main);">+</button>
+              </div>
+            </div>
+            <p class="text-[11px] mt-1.5" style="color: var(--text-muted);">Ferido abaixo da metade, Morrendo em 0</p>
+          </div>
+
+          <!-- Pulso -->
+          <div class="dossier-subcard rounded-lg p-3 mb-3">
+            <div class="flex items-center justify-between gap-2 mb-1.5">
+              <span class="text-xs font-bold uppercase tracking-wider" style="color: var(--text-secondary);">Pulso</span>
+              <span id="badge-pulso" class="px-2 py-0.5 rounded text-[11px] font-mono font-bold uppercase tracking-wide hidden">Colapso</span>
+            </div>
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-1.5">
+                <button type="button" onclick="adjustNumber('recursos.pulsoAtual', -1)" class="no-print w-8 h-8 rounded-lg border font-mono font-bold text-base flex items-center justify-center hover:opacity-80" style="background-color: var(--bg-input); border-color: var(--border-main);">-</button>
+                <input type="number" min="0" data-path="recursos.pulsoAtual" aria-label="Pulso Atual" class="dossier-input w-14 h-9 text-center font-mono text-lg font-bold rounded-lg" />
+                <span class="font-mono text-base font-bold" style="color: var(--text-muted);">/</span>
+                <input type="number" min="0" data-path="recursos.pulsoMax" aria-label="Pulso Máximo" class="dossier-input w-14 h-9 text-center font-mono text-lg font-bold rounded-lg" />
+                <button type="button" onclick="adjustNumber('recursos.pulsoAtual', 1)" class="no-print w-8 h-8 rounded-lg border font-mono font-bold text-base flex items-center justify-center hover:opacity-80" style="background-color: var(--bg-input); border-color: var(--border-main);">+</button>
+              </div>
+            </div>
+            <p class="text-[11px] mt-1.5" style="color: var(--text-muted);">Colapso em 0</p>
+          </div>
+        </div>
+
+        <!-- Reação da Rodada & RD -->
+        <div class="grid grid-cols-2 gap-2.5 pt-1">
+          <label class="dossier-subcard rounded-lg p-2.5 flex items-center gap-2 cursor-pointer select-none">
+            <input type="checkbox" data-path="recursos.reacaoDisponivel" class="tactical-check tactical-check-moss" />
+            <div>
+              <span class="block text-xs font-bold leading-tight" style="color: var(--text-primary);">Reação</span>
+              <span class="block text-[11px]" style="color: var(--text-secondary);">disponível</span>
+            </div>
+          </label>
+
+          <div class="dossier-subcard rounded-lg p-2.5 flex items-center justify-between gap-2">
+            <label for="field-rd" class="text-xs font-bold uppercase tracking-wider" style="color: var(--text-secondary);">RD</label>
+            <input id="field-rd" type="number" min="0" data-path="recursos.rd" class="dossier-input w-14 h-8 text-center font-mono text-base font-bold rounded-md" />
           </div>
         </div>
       </section>
 
-     
-      <section class="section-box" aria-label="Rotina">
-        <div class="section-header">
-          <h2 class="section-title">ROTINA</h2>
-        </div>
+      <!-- 3B. ROTINA -->
+      <section class="dossier-card rounded-xl p-4 sm:p-5 flex flex-col justify-between space-y-4">
+        <div>
+          <h2 class="font-display text-base sm:text-lg font-bold uppercase tracking-wider flex items-center gap-2 mb-3.5" style="color: var(--text-primary);">
+            <span class="w-2 h-2 rounded-sm inline-block" style="background-color: var(--accent-amber);"></span>
+            Rotina
+          </h2>
 
-        <div class="sub-card">
-          <span class="micro-label">BÁSICOS DO DIA</span>
-          <div class="checks-inline">
-            <label class="custom-check">
-              <input type="checkbox" data-bool="dormir" />
-              <span>DORMIR</span>
-            </label>
-            <label class="custom-check">
-              <input type="checkbox" data-bool="comer" />
-              <span>COMER</span>
-            </label>
-            <label class="custom-check">
-              <input type="checkbox" data-bool="vinculoDia" />
-              <span>VÍNCULO</span>
-            </label>
+          <!-- Âncoras de hoje -->
+          <div class="dossier-subcard rounded-lg p-3 mb-3">
+            <span class="block text-xs font-bold uppercase tracking-wider mb-2" style="color: var(--text-secondary);">Âncoras de hoje</span>
+            <div class="grid grid-cols-3 gap-2">
+              <label class="flex items-center gap-2 cursor-pointer select-none text-xs sm:text-sm font-medium">
+                <input type="checkbox" data-path="rotina.ancoras.dormir" class="tactical-check tactical-check-moss" />
+                <span>Dormir</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer select-none text-xs sm:text-sm font-medium">
+                <input type="checkbox" data-path="rotina.ancoras.comer" class="tactical-check tactical-check-moss" />
+                <span>Comer</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer select-none text-xs sm:text-sm font-medium">
+                <input type="checkbox" data-path="rotina.ancoras.vinculo" class="tactical-check tactical-check-moss" />
+                <span>Vínculo</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Estado -->
+          <div class="dossier-subcard rounded-lg p-3 mb-3">
+            <span class="block text-xs font-bold uppercase tracking-wider mb-2" style="color: var(--text-secondary);">Estado</span>
+            <div class="grid grid-cols-3 gap-2">
+              <label class="flex items-center gap-1.5 cursor-pointer select-none text-xs sm:text-sm font-medium">
+                <input type="checkbox" name="estado-rotina" value="Firme" onclick="selectEstado('Firme')" class="tactical-check tactical-check-moss estado-checkbox" />
+                <span>Firme</span>
+              </label>
+              <label class="flex items-center gap-1.5 cursor-pointer select-none text-xs sm:text-sm font-medium">
+                <input type="checkbox" name="estado-rotina" value="Estável" onclick="selectEstado('Estável')" class="tactical-check estado-checkbox" />
+                <span>Estável</span>
+              </label>
+              <label class="flex items-center gap-1.5 cursor-pointer select-none text-xs sm:text-sm font-medium">
+                <input type="checkbox" name="estado-rotina" value="Desgaste" onclick="selectEstado('Desgaste')" class="tactical-check tactical-check-danger estado-checkbox" />
+                <span>Desgaste</span>
+              </label>
+            </div>
           </div>
         </div>
 
-        <div class="sub-card">
-          <span class="micro-label">ESTADO</span>
-          <div class="state-pills" id="state-selector">
-            <button type="button" class="state-pill active" data-state="firme">● FIRME</button>
-            <button type="button" class="state-pill" data-state="instavel">○ INSTÁVEL</button>
-            <button type="button" class="state-pill" data-state="desgaste">○ DESGASTE</button>
+        <!-- Marcadores de Desgaste -->
+        <div class="dossier-subcard rounded-lg p-3">
+          <div class="flex items-center justify-between gap-2 mb-2">
+            <span class="text-xs font-bold uppercase tracking-wider" style="color: var(--text-secondary);">Marcadores de Desgaste</span>
+            <span id="badge-esgotado" class="hidden px-2 py-0.5 rounded text-[11px] font-mono font-bold uppercase tracking-wider animate-pulse" style="background-color: var(--accent-danger-soft); color: var(--accent-danger); border: 1px solid rgba(239,68,68,0.45);">
+              ESGOTADO
+            </span>
           </div>
-        </div>
-
-        <div class="sub-card">
-          <div class="sub-card-top">
-            <span class="micro-label">MARCADORES DE DESGASTE</span>
-            <button type="button" class="btn-mini" id="btn-zerar-desgaste" style="padding: 1px 6px; font-size: 8.5px;">ZERAR</button>
-          </div>
-          <div class="wear-row">
-            <label class="custom-check"><input type="checkbox" data-wear="0" /></label>
-            <label class="custom-check"><input type="checkbox" data-wear="1" /></label>
-            <label class="custom-check"><input type="checkbox" data-wear="2" /></label>
-            <span class="micro-hint">(3 = esgotado)</span>
+          <div class="flex items-center gap-3">
+            <input type="checkbox" data-path="rotina.desgaste.0" aria-label="Marcador de Desgaste 1" class="tactical-check tactical-check-danger w-6 h-6" />
+            <input type="checkbox" data-path="rotina.desgaste.1" aria-label="Marcador de Desgaste 2" class="tactical-check tactical-check-danger w-6 h-6" />
+            <input type="checkbox" data-path="rotina.desgaste.2" aria-label="Marcador de Desgaste 3" class="tactical-check tactical-check-danger w-6 h-6" />
+            <span class="text-[11px]" style="color: var(--text-muted);">(3 deixam você Esgotado)</span>
           </div>
         </div>
       </section>
 
-      <!-- COLUNA 3: DEFESAS -->
-      <section class="section-box" aria-label="Defesas">
-        <div class="section-header">
-          <h2 class="section-title">DEFESAS</h2>
+      <!-- 3C. DEFESAS -->
+      <section class="dossier-card rounded-xl p-4 sm:p-5 flex flex-col justify-between space-y-4">
+        <h2 class="font-display text-base sm:text-lg font-bold uppercase tracking-wider flex items-center gap-2" style="color: var(--text-primary);">
+          <span class="w-2 h-2 rounded-sm inline-block" style="background-color: var(--accent-amber);"></span>
+          Defesas
+        </h2>
+
+        <!-- Esquiva -->
+        <div class="dossier-subcard rounded-lg p-3 space-y-2.5">
+          <div class="flex items-center justify-between gap-2">
+            <div>
+              <span class="block text-sm font-bold" style="color: var(--text-primary);">Esquiva</span>
+              <span class="block text-[11px]" style="color: var(--text-secondary);">Agilidade + Reflexos</span>
+            </div>
+            <button type="button" onclick="rollDefense('esquiva', 'Esquiva')" class="no-print inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-mono font-semibold border transition hover:brightness-110" style="background-color: var(--accent-amber-soft); border-color: var(--accent-amber-border); color: var(--accent-amber);">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>
+              <span>Rolar</span>
+            </button>
+          </div>
+
+          <div class="flex items-center justify-between gap-2 pt-1 border-t" style="border-color: var(--border-subtle);">
+            <div class="flex items-center gap-1.5">
+              <input id="def-esquiva-dados" type="number" min="0" max="30" data-path="defesas.esquivaDados" oninput="markDefenseManual('esquiva')" class="dossier-input w-14 h-9 text-center font-mono text-base font-bold rounded-lg" />
+              <span class="font-mono text-sm font-bold" style="color: var(--text-secondary);">d6</span>
+              <button type="button" id="sync-esquiva-btn" onclick="resetDefenseSync('esquiva')" class="no-print hidden text-xs px-1.5 py-0.5 rounded border" style="border-color: var(--border-main); color: var(--text-secondary);" title="Recalcular automaticamente (Agilidade + Reflexos)">↻</button>
+            </div>
+
+            <div class="flex items-center gap-1.5">
+              <label for="def-esquiva-passiva" class="text-xs font-medium" style="color: var(--text-secondary);">passiva</label>
+              <input id="def-esquiva-passiva" type="number" min="0" max="99" data-path="defesas.esquivaPassiva" class="dossier-input w-14 h-9 text-center font-mono text-base font-bold rounded-lg" />
+            </div>
+          </div>
         </div>
 
-        <div class="defense-box">
-          <div class="defense-head">
+        <!-- Bloqueio -->
+        <div class="dossier-subcard rounded-lg p-3 space-y-2.5">
+          <div class="flex items-center justify-between gap-2">
             <div>
-              <div class="defense-title">ESQUIVA</div>
-              <div class="defense-sub">Agilidade + Reflexos</div>
+              <span class="block text-sm font-bold" style="color: var(--text-primary);">Bloqueio</span>
+              <span class="block text-[11px]" style="color: var(--text-secondary);">Vigor + Fortitude</span>
             </div>
-            <button type="button" class="btn-roll-attr" onclick="rollDefense('esquiva')">ROLAR</button>
+            <button type="button" onclick="rollDefense('bloqueio', 'Bloqueio')" class="no-print inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-mono font-semibold border transition hover:brightness-110" style="background-color: var(--accent-amber-soft); border-color: var(--accent-amber-border); color: var(--accent-amber);">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>
+              <span>Rolar</span>
+            </button>
           </div>
-          <div class="defense-controls">
-            <div class="dice-count-group">
-              <input type="number" id="f-esqDados" data-field="esqDados" value="1" min="1" />
-              <span>d6</span>
-            </div>
-            <div class="posture-group">
-              <span>Postura:</span>
-              <input type="number" id="f-esqPostura" data-field="esqPostura" value="0" />
-            </div>
-          </div>
-        </div>
 
-        <div class="defense-box">
-          <div class="defense-head">
-            <div>
-              <div class="defense-title">BLOQUEIO</div>
-              <div class="defense-sub">Vigor + Tenacidade</div>
+          <div class="flex items-center justify-between gap-2 pt-1 border-t" style="border-color: var(--border-subtle);">
+            <div class="flex items-center gap-1.5">
+              <input id="def-bloqueio-dados" type="number" min="0" max="30" data-path="defesas.bloqueioDados" oninput="markDefenseManual('bloqueio')" class="dossier-input w-14 h-9 text-center font-mono text-base font-bold rounded-lg" />
+              <span class="font-mono text-sm font-bold" style="color: var(--text-secondary);">d6</span>
+              <button type="button" id="sync-bloqueio-btn" onclick="resetDefenseSync('bloqueio')" class="no-print hidden text-xs px-1.5 py-0.5 rounded border" style="border-color: var(--border-main); color: var(--text-secondary);" title="Recalcular automaticamente (Vigor + Fortitude)">↻</button>
             </div>
-            <button type="button" class="btn-roll-attr" onclick="rollDefense('bloqueio')">ROLAR</button>
-          </div>
-          <div class="defense-controls">
-            <div class="dice-count-group">
-              <input type="number" id="f-bloqDados" data-field="bloqDados" value="1" min="1" />
-              <span>d6</span>
-            </div>
-            <div class="posture-group">
-              <span>Postura:</span>
-              <input type="number" id="f-bloqPostura" data-field="bloqPostura" value="0" />
+
+            <div class="flex items-center gap-1.5">
+              <label for="def-bloqueio-passiva" class="text-xs font-medium" style="color: var(--text-secondary);">passiva</label>
+              <input id="def-bloqueio-passiva" type="number" min="0" max="99" data-path="defesas.bloqueioPassiva" class="dossier-input w-14 h-9 text-center font-mono text-base font-bold rounded-lg" />
             </div>
           </div>
         </div>
       </section>
     </div>
 
- 
-    <section class="section-box" aria-label="Perícias">
-      <div class="section-header">
-        <h2 class="section-title">PERÍCIAS</h2>
-        <span class="section-subtitle">MARQUE AS TREINADAS (X) • CLIQUE EM ROL PARA ROLAR</span>
+    <!-- ========================================================================
+         4. PERÍCIAS (MARQUE AS TREINADAS, NÍVEL 2)
+         ======================================================================== -->
+    <section class="dossier-card rounded-xl p-4 sm:p-6">
+      <div class="flex flex-wrap items-center justify-between gap-2 pb-3 mb-4 border-b" style="border-color: var(--border-subtle);">
+        <h2 class="font-display text-base sm:text-lg font-bold uppercase tracking-wider flex items-center gap-2" style="color: var(--text-primary);">
+          <span class="w-2 h-2 rounded-sm inline-block" style="background-color: var(--accent-amber);"></span>
+          Perícias <span class="text-xs font-sans font-normal normal-case" style="color: var(--text-secondary);">(marque as treinadas, nível 2)</span>
+        </h2>
+        <span class="text-xs font-mono no-print" style="color: var(--text-muted);">Rolagem rápida = Atributo + 2 se treinada</span>
       </div>
 
-      <div class="skills-grid" id="skills-grid">
-       
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5 print-grid-3">
+        <!-- Coluna 1: Físicas -->
+        <div class="dossier-subcard rounded-xl p-3.5">
+          <h3 class="text-xs font-mono font-bold uppercase tracking-wider pb-2 mb-2.5 border-b" style="color: var(--accent-amber); border-color: var(--border-subtle);">Físicas</h3>
+          <div id="skills-fisicas" class="space-y-1.5"></div>
+        </div>
+
+        <!-- Coluna 2: Técnicas -->
+        <div class="dossier-subcard rounded-xl p-3.5">
+          <h3 class="text-xs font-mono font-bold uppercase tracking-wider pb-2 mb-2.5 border-b" style="color: var(--accent-amber); border-color: var(--border-subtle);">Técnicas</h3>
+          <div id="skills-tecnicas" class="space-y-1.5"></div>
+        </div>
+
+        <!-- Coluna 3: Mentais e Sociais -->
+        <div class="dossier-subcard rounded-xl p-3.5">
+          <h3 class="text-xs font-mono font-bold uppercase tracking-wider pb-2 mb-2.5 border-b" style="color: var(--accent-amber); border-color: var(--border-subtle);">Mentais e sociais</h3>
+          <div id="skills-mentais" class="space-y-1.5"></div>
+        </div>
       </div>
     </section>
 
-   
-    <div class="two-col-grid">
-      <section class="section-box" aria-label="Privilégio do Antecedente">
-        <div class="section-header">
-          <h2 class="section-title">PRIVILÉGIO DO ANTECEDENTE</h2>
-        </div>
-        <textarea id="f-privilegio" data-field="privilegio" placeholder="Benefício narrativo, contatos ou vantagem prática do seu antecedente..."></textarea>
+    <!-- ========================================================================
+         5. PRIVILÉGIO DO ANTECEDENTE & ALTERAÇÃO (SÓ DISSONANTE)
+         ======================================================================== -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <!-- Privilégio do Antecedente -->
+      <section class="dossier-card rounded-xl p-4 sm:p-5 flex flex-col">
+        <h2 class="font-display text-base sm:text-lg font-bold uppercase tracking-wider flex items-center gap-2 mb-3" style="color: var(--text-primary);">
+          <span class="w-2 h-2 rounded-sm inline-block" style="background-color: var(--accent-moss);"></span>
+          Privilégio do antecedente
+        </h2>
+        <textarea data-path="privilegioAntecedente" rows="4" class="dossier-input auto-grow w-full flex-1 rounded-lg px-3 py-2.5 text-sm leading-relaxed" placeholder="Descreva o benefício narrativo, contatos ou vantagem prática do seu antecedente..."></textarea>
       </section>
 
-      <section class="section-box" aria-label="Alteração (Só Dissonante)">
-        <div class="section-header">
-          <h2 class="section-title">ALTERAÇÃO (SÓ DISSONANTE)</h2>
+      <!-- Alteração (só Dissonante) -->
+      <section id="card-dissonante" class="dossier-card rounded-xl p-4 sm:p-5 transition-all">
+        <div class="flex items-center justify-between gap-2 mb-3">
+          <h2 class="font-display text-base sm:text-lg font-bold uppercase tracking-wider flex items-center gap-2" style="color: var(--text-primary);">
+            <span id="dot-dissonante" class="w-2 h-2 rounded-sm inline-block" style="background-color: var(--text-muted);"></span>
+            Alteração <span class="text-xs font-sans font-normal normal-case" style="color: var(--text-secondary);">(só Dissonante)</span>
+          </h2>
+          <span id="badge-dissonante" class="hidden px-2 py-0.5 rounded text-[11px] font-mono font-semibold uppercase" style="background-color: var(--accent-dissonant-soft); color: var(--accent-dissonant); border: 1px solid var(--accent-dissonant-border);">
+            Caminho Ativo
+          </span>
         </div>
-        <div class="alteracao-stack">
-          <div class="field-group">
-            <label class="micro-label" for="f-alt-nome">ALTERAÇÃO</label>
-            <input type="text" id="f-alt-nome" data-field="altNome" placeholder="Nome ou natureza da alteração..." />
+
+        <div class="space-y-2.5">
+          <div>
+            <label for="diss-alteracao" class="block text-xs font-semibold uppercase tracking-wider mb-1" style="color: var(--text-secondary);">Alteração</label>
+            <input id="diss-alteracao" type="text" data-path="alteracaoDissonante.alteracao" class="dossier-input w-full rounded-lg px-3 py-1.5 text-sm" placeholder="Nome ou natureza da alteração..." />
           </div>
-          <div class="field-group">
-            <label class="micro-label" for="f-alt-forma">FORMA</label>
-            <input type="text" id="f-alt-forma" data-field="altForma" placeholder="Como se manifesta no corpo ou ambiente..." />
+          <div>
+            <label for="diss-forma" class="block text-xs font-semibold uppercase tracking-wider mb-1" style="color: var(--text-secondary);">Forma</label>
+            <input id="diss-forma" type="text" data-path="alteracaoDissonante.forma" class="dossier-input w-full rounded-lg px-3 py-1.5 text-sm" placeholder="Como ela se manifesta no corpo ou ambiente..." />
           </div>
-          <div class="field-group">
-            <label class="micro-label" for="f-alt-preco">PREÇO</label>
-            <input type="text" id="f-alt-preco" data-field="altPreco" placeholder="Custo em Pulso, desgaste ou efeito colateral..." />
+          <div>
+            <label for="diss-preco" class="block text-xs font-semibold uppercase tracking-wider mb-1" style="color: var(--text-secondary);">Preço</label>
+            <input id="diss-preco" type="text" data-path="alteracaoDissonante.preco" class="dossier-input w-full rounded-lg px-3 py-1.5 text-sm" placeholder="Custo em Pulso, Desgaste ou efeito colateral..." />
           </div>
         </div>
       </section>
     </div>
 
-  
-    <section class="section-box" aria-label="Poderes de Classe e Poderes Gerais">
-      <div class="section-header">
-        <h2 class="section-title">PODERES DE CLASSE E PODERES GERAIS</h2>
-        <button type="button" class="btn-header-action" id="btn-add-power">+ ADICIONAR PODER</button>
+    <!-- ========================================================================
+         6. PODERES DE CLASSE E PODERES GERAIS
+         ======================================================================== -->
+    <section class="dossier-card rounded-xl p-4 sm:p-6">
+      <div class="flex flex-wrap items-center justify-between gap-2 pb-3 mb-4 border-b" style="border-color: var(--border-subtle);">
+        <h2 class="font-display text-base sm:text-lg font-bold uppercase tracking-wider flex items-center gap-2" style="color: var(--text-primary);">
+          <span class="w-2 h-2 rounded-sm inline-block" style="background-color: var(--accent-amber);"></span>
+          Poderes de classe e Poderes Gerais
+        </h2>
+        <button type="button" onclick="addPowerRow()" class="no-print inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition hover:brightness-110" style="background-color: var(--accent-amber-soft); border-color: var(--accent-amber-border); color: var(--accent-amber);">
+          <span>+ Adicionar Poder</span>
+        </button>
       </div>
 
-      <div class="dynamic-list" id="powers-list">
-        
+      <div id="powers-container" class="space-y-2.5"></div>
+    </section>
+
+    <!-- ========================================================================
+         7. PROFICIÊNCIAS, ARMAS, PROTEÇÃO E EQUIPAMENTO
+         ======================================================================== -->
+    <section class="dossier-card rounded-xl p-4 sm:p-6 space-y-5">
+      <div class="pb-3 border-b" style="border-color: var(--border-subtle);">
+        <h2 class="font-display text-base sm:text-lg font-bold uppercase tracking-wider flex items-center gap-2" style="color: var(--text-primary);">
+          <span class="w-2 h-2 rounded-sm inline-block" style="background-color: var(--accent-amber);"></span>
+          Combate, Proteção e Suprimentos
+        </h2>
+      </div>
+
+      <!-- Proficiências -->
+      <div class="dossier-subcard rounded-xl p-3.5">
+        <span class="block text-xs font-mono font-bold uppercase tracking-wider mb-2.5" style="color: var(--text-secondary);">Proficiências</span>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <label class="flex items-center gap-2 cursor-pointer select-none text-xs sm:text-sm font-medium">
+            <input type="checkbox" data-path="proficiencias.armasSimples" class="tactical-check" />
+            <span>Armas Simples</span>
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer select-none text-xs sm:text-sm font-medium">
+            <input type="checkbox" data-path="proficiencias.armasMarciais" class="tactical-check" />
+            <span>Armas Marciais</span>
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer select-none text-xs sm:text-sm font-medium">
+            <input type="checkbox" data-path="proficiencias.fogoLeve" class="tactical-check" />
+            <span>Fogo Leve</span>
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer select-none text-xs sm:text-sm font-medium">
+            <input type="checkbox" data-path="proficiencias.fogoPesado" class="tactical-check" />
+            <span>Fogo Pesado</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Armas -->
+      <div>
+        <div class="flex items-center justify-between gap-2 mb-2.5">
+          <h3 class="text-xs font-mono font-bold uppercase tracking-wider" style="color: var(--accent-amber);">Armas</h3>
+          <button type="button" onclick="addWeaponRow()" class="no-print inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold border transition hover:brightness-110" style="background-color: var(--accent-amber-soft); border-color: var(--accent-amber-border); color: var(--accent-amber);">
+            <span>+ Adicionar Arma</span>
+          </button>
+        </div>
+        <div id="weapons-container" class="space-y-3"></div>
+      </div>
+
+      <!-- Proteção -->
+      <div class="dossier-subcard rounded-xl p-3.5">
+        <h3 class="text-xs font-mono font-bold uppercase tracking-wider mb-2.5" style="color: var(--accent-amber);">Proteção</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
+          <div class="sm:col-span-4">
+            <label for="prot-tipo" class="block text-[11px] font-semibold uppercase tracking-wider mb-1" style="color: var(--text-secondary);">Tipo (Leve, Média ou Pesada)</label>
+            <select id="prot-tipo" data-path="protecao.tipo" class="dossier-input w-full rounded-lg px-3 py-2 text-sm">
+              <option value="">Nenhuma / Selecione...</option>
+              <option value="Leve">Leve</option>
+              <option value="Média">Média</option>
+              <option value="Pesada">Pesada</option>
+            </select>
+          </div>
+          <div class="sm:col-span-6">
+            <label for="prot-item" class="block text-[11px] font-semibold uppercase tracking-wider mb-1" style="color: var(--text-secondary);">Item</label>
+            <input id="prot-item" type="text" data-path="protecao.item" class="dossier-input w-full rounded-lg px-3 py-2 text-sm" placeholder="Ex.: Colete improvisado, jaqueta reforçada..." />
+          </div>
+          <div class="sm:col-span-2">
+            <label for="prot-rd" class="block text-[11px] font-semibold uppercase tracking-wider mb-1" style="color: var(--text-secondary);">RD</label>
+            <input id="prot-rd" type="number" min="0" data-path="protecao.rd" class="dossier-input w-full text-center font-mono font-bold rounded-lg px-2 py-2 text-sm" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Equipamento e Suprimentos -->
+      <div>
+        <h3 class="text-xs font-mono font-bold uppercase tracking-wider mb-2.5" style="color: var(--accent-moss);">Equipamento e suprimentos</h3>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
+          <!-- Caixas de munição -->
+          <div class="dossier-subcard rounded-lg p-3 flex flex-col justify-between">
+            <span class="text-xs font-semibold mb-2" style="color: var(--text-secondary);">Caixas de munição</span>
+            <div class="flex items-center justify-between gap-1.5">
+              <button type="button" onclick="adjustNumber('equipamento.municao', -1)" class="no-print w-8 h-8 rounded-lg border font-mono font-bold flex items-center justify-center hover:opacity-80" style="background-color: var(--bg-input); border-color: var(--border-main);">-</button>
+              <input type="number" min="0" data-path="equipamento.municao" aria-label="Caixas de munição" class="dossier-input w-14 h-8 text-center font-mono text-base font-bold rounded-lg" />
+              <button type="button" onclick="adjustNumber('equipamento.municao', 1)" class="no-print w-8 h-8 rounded-lg border font-mono font-bold flex items-center justify-center hover:opacity-80" style="background-color: var(--bg-input); border-color: var(--border-main);">+</button>
+            </div>
+          </div>
+
+          <!-- Kits de Primeiros Socorros -->
+          <div class="dossier-subcard rounded-lg p-3 flex flex-col justify-between">
+            <span class="text-xs font-semibold mb-2" style="color: var(--text-secondary);">Kits de Primeiros Socorros</span>
+            <div class="flex items-center justify-between gap-1.5">
+              <button type="button" onclick="adjustNumber('equipamento.kitsPrimeirosSocorros', -1)" class="no-print w-8 h-8 rounded-lg border font-mono font-bold flex items-center justify-center hover:opacity-80" style="background-color: var(--bg-input); border-color: var(--border-main);">-</button>
+              <input type="number" min="0" data-path="equipamento.kitsPrimeirosSocorros" aria-label="Kits de Primeiros Socorros" class="dossier-input w-14 h-8 text-center font-mono text-base font-bold rounded-lg" />
+              <button type="button" onclick="adjustNumber('equipamento.kitsPrimeirosSocorros', 1)" class="no-print w-8 h-8 rounded-lg border font-mono font-bold flex items-center justify-center hover:opacity-80" style="background-color: var(--bg-input); border-color: var(--border-main);">+</button>
+            </div>
+          </div>
+
+          <!-- Kit Cirúrgico -->
+          <div class="dossier-subcard rounded-lg p-3 flex flex-col justify-between">
+            <span class="text-xs font-semibold mb-2" style="color: var(--text-secondary);">Kit Cirúrgico</span>
+            <div class="flex items-center justify-between gap-1.5">
+              <button type="button" onclick="adjustNumber('equipamento.kitCirurgico', -1)" class="no-print w-8 h-8 rounded-lg border font-mono font-bold flex items-center justify-center hover:opacity-80" style="background-color: var(--bg-input); border-color: var(--border-main);">-</button>
+              <input type="number" min="0" data-path="equipamento.kitCirurgico" aria-label="Kit Cirúrgico" class="dossier-input w-14 h-8 text-center font-mono text-base font-bold rounded-lg" />
+              <button type="button" onclick="adjustNumber('equipamento.kitCirurgico', 1)" class="no-print w-8 h-8 rounded-lg border font-mono font-bold flex items-center justify-center hover:opacity-80" style="background-color: var(--bg-input); border-color: var(--border-main);">+</button>
+            </div>
+          </div>
+
+          <!-- Rações -->
+          <div class="dossier-subcard rounded-lg p-3 flex flex-col justify-between">
+            <span class="text-xs font-semibold mb-2" style="color: var(--text-secondary);">Rações</span>
+            <div class="flex items-center justify-between gap-1.5">
+              <button type="button" onclick="adjustNumber('equipamento.racoes', -1)" class="no-print w-8 h-8 rounded-lg border font-mono font-bold flex items-center justify-center hover:opacity-80" style="background-color: var(--bg-input); border-color: var(--border-main);">-</button>
+              <input type="number" min="0" data-path="equipamento.racoes" aria-label="Rações" class="dossier-input w-14 h-8 text-center font-mono text-base font-bold rounded-lg" />
+              <button type="button" onclick="adjustNumber('equipamento.racoes', 1)" class="no-print w-8 h-8 rounded-lg border font-mono font-bold flex items-center justify-center hover:opacity-80" style="background-color: var(--bg-input); border-color: var(--border-main);">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label for="equip-outros" class="block text-xs font-semibold uppercase tracking-wider mb-1" style="color: var(--text-secondary);">Outros</label>
+          <textarea id="equip-outros" rows="3" data-path="equipamento.outros" class="dossier-input auto-grow w-full rounded-lg px-3 py-2 text-sm leading-relaxed" placeholder="Mochila, lanterna, rádio, ferramentas, cantil, itens pessoais..."></textarea>
+        </div>
       </div>
     </section>
 
-
-    <section class="section-box" aria-label="Combate, Proteção e Suprimentos">
-      <div class="section-header">
-        <h2 class="section-title">COMBATE, PROTEÇÃO E SUPRIMENTOS</h2>
-        <button type="button" class="btn-header-action" id="btn-add-weapon">+ ADICIONAR ARMA</button>
+    <!-- ========================================================================
+         8. VÍNCULOS E ANOTAÇÕES
+         ======================================================================== -->
+    <section class="dossier-card rounded-xl p-4 sm:p-6 space-y-5">
+      <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b" style="border-color: var(--border-subtle);">
+        <h2 class="font-display text-base sm:text-lg font-bold uppercase tracking-wider flex items-center gap-2" style="color: var(--text-primary);">
+          <span class="w-2 h-2 rounded-sm inline-block" style="background-color: var(--accent-moss);"></span>
+          Vínculos e anotações
+        </h2>
+        <button type="button" onclick="addBondRow()" class="no-print inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold border transition hover:brightness-110" style="background-color: var(--accent-moss-soft); border-color: var(--accent-moss-border); color: var(--accent-moss);">
+          <span>+ Adicionar Vínculo</span>
+        </button>
       </div>
 
-      <div class="sub-block-title">PROFICIÊNCIAS</div>
-      <div class="prof-bar">
-        <label class="custom-check"><input type="checkbox" data-bool="profSimples" /><span>ARMAS SIMPLES</span></label>
-        <label class="custom-check"><input type="checkbox" data-bool="profMarciais" /><span>ARMAS MARCIAIS</span></label>
-        <label class="custom-check"><input type="checkbox" data-bool="profFogoLeve" /><span>FOGO LEVE</span></label>
-        <label class="custom-check"><input type="checkbox" data-bool="profFogoPesado" /><span>FOGO PESADO</span></label>
+      <!-- Lista de Vínculos -->
+      <div>
+        <div class="hidden sm:grid sm:grid-cols-12 gap-3 px-1 mb-1.5 text-[11px] font-mono font-bold uppercase tracking-wider" style="color: var(--text-secondary);">
+          <div class="sm:col-span-4">Pessoa / Grupo / Lugar</div>
+          <div class="sm:col-span-8">Relação / Promessa / Nota</div>
+        </div>
+        <div id="bonds-container" class="space-y-2.5"></div>
       </div>
 
-      <div class="sub-block-title">ARMAS</div>
-      <div class="dynamic-list" id="weapons-list">
-     
+      <!-- Diário / Anotações Livres -->
+      <div class="pt-2">
+        <label for="field-anotacoes" class="block text-xs font-mono font-bold uppercase tracking-wider mb-1.5" style="color: var(--text-secondary);">Anotações &amp; Diário de Sobrevivência</label>
+        <textarea id="field-anotacoes" rows="4" data-path="anotacoes" class="dossier-input auto-grow w-full rounded-lg px-3.5 py-2.5 text-sm leading-relaxed" placeholder="Registros da jornada, abrigos conhecidos, pistas, lembranças e anotações de sessão..."></textarea>
       </div>
-
-      <div class="sub-block-title">PROTEÇÃO</div>
-      <div class="armor-bar">
-        <div class="field-group">
-          <label class="micro-label" for="f-prot-tipo">PROTEÇÃO (TIPO)</label>
-          <select id="f-prot-tipo" data-field="protTipo">
-            <option value="">Nenhuma / Selecione...</option>
-            <option value="Proteção Leve">Proteção Leve</option>
-            <option value="Proteção Média">Proteção Média</option>
-            <option value="Proteção Pesada">Proteção Pesada</option>
-          </select>
-        </div>
-        <div class="field-group">
-          <label class="micro-label" for="f-prot-nome">NOME DA PROTEÇÃO</label>
-          <input type="text" id="f-prot-nome" data-field="protNome" placeholder="Ex.: Jaqueta reforçada, colete tático..." />
-        </div>
-        <div class="field-group">
-          <label class="micro-label" for="f-prot-rd">RD</label>
-          <input type="number" id="f-prot-rd" data-field="protRd" value="0" min="0" />
-        </div>
-      </div>
-
-      <div class="sub-block-title">EQUIPAMENTOS & SUPRIMENTOS</div>
-      <div class="supplies-grid">
-        <div class="supply-box">
-          <span class="micro-label">CAIXAS DE MUNIÇÃO</span>
-          <div class="supply-stepper">
-            <button type="button" class="btn-step" onclick="stepNumber('supMunicao', -1)">-</button>
-            <input type="number" class="stepper-num" id="f-supMunicao" data-field="supMunicao" value="0" min="0" />
-            <button type="button" class="btn-step" onclick="stepNumber('supMunicao', 1)">+</button>
-          </div>
-        </div>
-        <div class="supply-box">
-          <span class="micro-label">KITS MÉDICOS USADOS</span>
-          <div class="supply-stepper">
-            <button type="button" class="btn-step" onclick="stepNumber('supMedicos', -1)">-</button>
-            <input type="number" class="stepper-num" id="f-supMedicos" data-field="supMedicos" value="0" min="0" />
-            <button type="button" class="btn-step" onclick="stepNumber('supMedicos', 1)">+</button>
-          </div>
-        </div>
-        <div class="supply-box">
-          <span class="micro-label">KIT TÉCNICO</span>
-          <div class="supply-stepper">
-            <button type="button" class="btn-step" onclick="stepNumber('supTecnico', -1)">-</button>
-            <input type="number" class="stepper-num" id="f-supTecnico" data-field="supTecnico" value="0" min="0" />
-            <button type="button" class="btn-step" onclick="stepNumber('supTecnico', 1)">+</button>
-          </div>
-        </div>
-        <div class="supply-box">
-          <span class="micro-label">RAÇÕES</span>
-          <div class="supply-stepper">
-            <button type="button" class="btn-step" onclick="stepNumber('supRacoes', -1)">-</button>
-            <input type="number" class="stepper-num" id="f-supRacoes" data-field="supRacoes" value="0" min="0" />
-            <button type="button" class="btn-step" onclick="stepNumber('supRacoes', 1)">+</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="sub-block-title">MOCHILA / ITENS E CARGA</div>
-      <textarea id="f-mochila" data-field="mochila" placeholder="Lanterna, rádio, ferramentas, cantil, corda, documentos..."></textarea>
     </section>
 
-    
-    <section class="section-box" aria-label="Vínculos e Anotações">
-      <div class="section-header">
-        <h2 class="section-title">VÍNCULOS E ANOTAÇÕES</h2>
-        <button type="button" class="btn-header-action" id="btn-add-bond">+ ADICIONAR VÍNCULO</button>
-      </div>
-
-      <div class="dynamic-list" id="bonds-list">
-    
-      </div>
-
-      <div class="sub-block-title">ANOTAÇÕES DE CAMPO</div>
-      <textarea id="f-anotacoes" data-field="anotacoes" placeholder="Registros de sessão, abrigos, pistas, ferimentos e anotações gerais..."></textarea>
-    </section>
   </main>
 
+  <!-- ==========================================================================
+       MODAL INTERATIVO DE ROLAGEM DE d6 (1d6 a 10d6+)
+       ========================================================================== -->
+  <div id="dice-modal" class="no-print fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/65 backdrop-blur-xs">
+    <div class="dossier-card w-full max-w-lg rounded-2xl p-5 sm:p-6 relative shadow-2xl">
+      <!-- Cabeçalho do Modal -->
+      <div class="flex items-start justify-between gap-3 pb-3 mb-4 border-b" style="border-color: var(--border-subtle);">
+        <div>
+          <span class="text-[11px] font-mono uppercase tracking-widest font-semibold" style="color: var(--accent-amber);">Simulador de Parada d6</span>
+          <h3 id="dice-modal-title" class="font-display text-lg sm:text-xl font-bold" style="color: var(--text-primary);">Rolagem Rápida</h3>
+          <p id="dice-modal-subtitle" class="text-xs mt-0.5" style="color: var(--text-secondary);">Escolha a quantidade de dados de 6 lados</p>
+        </div>
+        <button type="button" onclick="closeDiceModal()" class="p-1.5 rounded-lg border hover:opacity-80" style="border-color: var(--border-main); color: var(--text-secondary);" aria-label="Fechar janela de dados">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
 
-  <aside class="roll-toast" id="roll-toast" aria-live="polite">
-    <div class="roll-toast-head">
-      <span class="roll-toast-title" id="toast-title">ROLAGEM // LOST PARADISE</span>
-      <div class="roll-toast-actions">
-        <button type="button" class="btn-mini" id="btn-copy-roll" style="padding: 1px 6px; font-size: 8.5px;">COPIAR</button>
-        <button type="button" class="btn-mini" id="btn-close-toast" style="padding: 1px 6px; font-size: 8.5px;">X</button>
+      <!-- Seletor Rápido de 1d6 a 10d6 -->
+      <div class="mb-4">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--text-secondary);">Parada de Dados:</span>
+          <div class="flex items-center gap-1.5">
+            <button type="button" onclick="changeDicePool(-1)" class="w-7 h-7 rounded-md border font-mono font-bold text-sm" style="background-color: var(--bg-input); border-color: var(--border-main);">-</button>
+            <span id="dice-pool-display" class="font-mono font-bold text-base px-2" style="color: var(--accent-amber);">3d6</span>
+            <button type="button" onclick="changeDicePool(1)" class="w-7 h-7 rounded-md border font-mono font-bold text-sm" style="background-color: var(--bg-input); border-color: var(--border-main);">+</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-5 sm:grid-cols-10 gap-1.5">
+          <button type="button" onclick="rollDice(1)" class="dice-preset-btn py-1.5 rounded-md font-mono text-xs font-bold border transition" style="background-color: var(--bg-card-sub); border-color: var(--border-main);">1d6</button>
+          <button type="button" onclick="rollDice(2)" class="dice-preset-btn py-1.5 rounded-md font-mono text-xs font-bold border transition" style="background-color: var(--bg-card-sub); border-color: var(--border-main);">2d6</button>
+          <button type="button" onclick="rollDice(3)" class="dice-preset-btn py-1.5 rounded-md font-mono text-xs font-bold border transition" style="background-color: var(--bg-card-sub); border-color: var(--border-main);">3d6</button>
+          <button type="button" onclick="rollDice(4)" class="dice-preset-btn py-1.5 rounded-md font-mono text-xs font-bold border transition" style="background-color: var(--bg-card-sub); border-color: var(--border-main);">4d6</button>
+          <button type="button" onclick="rollDice(5)" class="dice-preset-btn py-1.5 rounded-md font-mono text-xs font-bold border transition" style="background-color: var(--bg-card-sub); border-color: var(--border-main);">5d6</button>
+          <button type="button" onclick="rollDice(6)" class="dice-preset-btn py-1.5 rounded-md font-mono text-xs font-bold border transition" style="background-color: var(--bg-card-sub); border-color: var(--border-main);">6d6</button>
+          <button type="button" onclick="rollDice(7)" class="dice-preset-btn py-1.5 rounded-md font-mono text-xs font-bold border transition" style="background-color: var(--bg-card-sub); border-color: var(--border-main);">7d6</button>
+          <button type="button" onclick="rollDice(8)" class="dice-preset-btn py-1.5 rounded-md font-mono text-xs font-bold border transition" style="background-color: var(--bg-card-sub); border-color: var(--border-main);">8d6</button>
+          <button type="button" onclick="rollDice(9)" class="dice-preset-btn py-1.5 rounded-md font-mono text-xs font-bold border transition" style="background-color: var(--bg-card-sub); border-color: var(--border-main);">9d6</button>
+          <button type="button" onclick="rollDice(10)" class="dice-preset-btn py-1.5 rounded-md font-mono text-xs font-bold border transition" style="background-color: var(--bg-card-sub); border-color: var(--border-main);">10d6</button>
+        </div>
+      </div>
+
+      <!-- Área Visual dos Dados Rolados -->
+      <div class="dossier-subcard rounded-xl p-4 mb-4 min-h-[112px] flex flex-col items-center justify-center">
+        <div id="dice-results-grid" class="flex flex-wrap items-center justify-center gap-2.5"></div>
+      </div>
+
+      <!-- Resumo Estatístico da Rolagem -->
+      <div class="grid grid-cols-3 gap-2.5 mb-4 text-center">
+        <div class="dossier-subcard rounded-lg p-2">
+          <span class="block text-[10px] font-mono uppercase" style="color: var(--text-secondary);">Maior Dado</span>
+          <span id="dice-stat-max" class="font-mono text-lg font-bold" style="color: var(--accent-amber);">-</span>
+        </div>
+        <div class="dossier-subcard rounded-lg p-2">
+          <span class="block text-[10px] font-mono uppercase" style="color: var(--text-secondary);">Sucessos (5–6)</span>
+          <span id="dice-stat-success" class="font-mono text-lg font-bold" style="color: var(--accent-moss);">-</span>
+        </div>
+        <div class="dossier-subcard rounded-lg p-2">
+          <span class="block text-[10px] font-mono uppercase" style="color: var(--text-secondary);">Soma Total</span>
+          <span id="dice-stat-sum" class="font-mono text-lg font-bold" style="color: var(--text-primary);">-</span>
+        </div>
+      </div>
+
+      <!-- Botão Rolar Novamente -->
+      <button type="button" onclick="rollDice(currentDicePool)" class="w-full py-2.5 rounded-xl font-display font-bold text-sm uppercase tracking-wider transition hover:brightness-110 active:scale-[0.99]" style="background-color: var(--accent-amber); color: var(--accent-on-10);">
+        Rolar Novamente
+      </button>
+
+      <!-- Histórico Recente da Sessão -->
+      <div class="mt-4 pt-3 border-t" style="border-color: var(--border-subtle);">
+        <span class="block text-[11px] font-mono uppercase tracking-wider mb-1.5" style="color: var(--text-muted);">Últimas rolagens da sessão</span>
+        <div id="dice-history-list" class="space-y-1 text-xs font-mono max-h-24 overflow-y-auto" style="color: var(--text-secondary);">
+          <p class="italic opacity-70">Nenhuma rolagem registrada ainda.</p>
+        </div>
       </div>
     </div>
-    <div class="roll-toast-body" id="toast-body"></div>
-  </aside>
+  </div>
 
+  <!-- ==========================================================================
+       MODAL DE CONFIRMAÇÃO PARA LIMPAR FICHA (SEM USAR confirm() NATIVO)
+       ========================================================================== -->
+  <div id="confirm-clear-modal" class="no-print fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/65 backdrop-blur-xs">
+    <div class="dossier-card w-full max-w-md rounded-2xl p-5 sm:p-6 shadow-2xl">
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style="background-color: var(--accent-danger-soft); color: var(--accent-danger);">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+        </div>
+        <div>
+          <h3 class="font-display text-lg font-bold" style="color: var(--text-primary);">Limpar Ficha Completa?</h3>
+          <p class="text-xs" style="color: var(--text-secondary);">Esta ação apagará todos os dados salvos no navegador.</p>
+        </div>
+      </div>
+
+      <p class="text-sm mb-5 leading-relaxed" style="color: var(--text-secondary);">
+        Tem certeza de que deseja zerar todos os campos deste personagem? Recomendamos exportar um backup em JSON antes caso queira guardar esta ficha.
+      </p>
+
+      <div class="flex items-center justify-end gap-2.5">
+        <button type="button" onclick="closeConfirmClearModal()" class="px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold border transition hover:opacity-85" style="background-color: var(--bg-card-sub); border-color: var(--border-main); color: var(--text-primary);">
+          Cancelar
+        </button>
+        <button type="button" onclick="confirmClearSheet()" class="px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold text-white transition hover:brightness-110" style="background-color: var(--accent-danger);">
+          Sim, Limpar Ficha
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       NOTIFICAÇÃO FLUTUANTE (TOAST)
+       ========================================================================== -->
+  <div id="toast-banner" class="no-print fixed bottom-4 right-4 z-50 hidden items-center gap-2 px-4 py-2.5 rounded-xl border text-xs sm:text-sm font-medium shadow-xl transition-all" style="background-color: var(--bg-card); border-color: var(--accent-amber-border); color: var(--text-primary);">
+    <span class="w-2 h-2 rounded-full" style="background-color: var(--accent-amber);"></span>
+    <span id="toast-message">Ação concluída.</span>
+  </div>
+
+  <!-- ==========================================================================
+       LÓGICA DA APLICAÇÃO (ESTADO, AUTO-SAVE, CÁLCULOS, ROLAGEM d6 E IO)
+       ========================================================================== -->
   <script>
+    const STORAGE_KEY = 'ficha_rpg_sobrevivencia_v1';
 
-    const THEME_KEY = 'lp_theme_60_30_10_v3';
-    const DATA_KEY = 'lp_character_sheet_v3';
-
-    const PRESETS = {
-      ambar: { c60: '#121210', c30: '#1a1916', c10: '#d97724' },
-      sucata: { c60: '#121212', c30: '#1e1e1e', c10: '#d9534f' },
-      verde: { c60: '#090f0a', c30: '#111c13', c10: '#38d96b' },
-      papel: { c60: '#dfd7c5', c30: '#ebe5d8', c10: '#8b261d' }
+    // Presets de cores 60 / 30 / 10
+    const COLOR_PRESETS = {
+      ardosia: { c60: '#0e1318', c30: '#161e27', c10: '#f59e0b', baseTheme: 'dark' },
+      sucata:  { c60: '#121212', c30: '#1e1e1e', c10: '#d9534f', baseTheme: 'dark' },
+      ambar:   { c60: '#0b0904', c30: '#161107', c10: '#ffb000', baseTheme: 'dark' },
+      papel:   { c60: '#f2efe9', c30: '#fcfbf8', c10: '#b45309', baseTheme: 'paper' }
     };
 
-    const pick60 = document.getElementById('pick-60');
-    const pick30 = document.getElementById('pick-30');
-    const pick10 = document.getElementById('pick-10');
-    const presetBtns = document.querySelectorAll('[data-preset]');
+    // Definição estruturada das perícias organizadas por categoria e atributo base
+    const SKILLS_CONFIG = {
+      fisicas: [
+        { key: 'luta', label: 'Luta', attr: 'forca', attrLabel: 'Força' },
+        { key: 'atletismo', label: 'Atletismo', attr: 'forca', attrLabel: 'Força' },
+        { key: 'fortitude', label: 'Fortitude', attr: 'vigor', attrLabel: 'Vigor' },
+        { key: 'tolerancia', label: 'Tolerância', attr: 'vigor', attrLabel: 'Vigor' },
+        { key: 'pontaria', label: 'Pontaria', attr: 'agilidade', attrLabel: 'Agilidade' },
+        { key: 'furtividade', label: 'Furtividade', attr: 'agilidade', attrLabel: 'Agilidade' },
+        { key: 'reflexos', label: 'Reflexos', attr: 'agilidade', attrLabel: 'Agilidade' },
+        { key: 'prestidigitacao', label: 'Prestidigitação', attr: 'agilidade', attrLabel: 'Agilidade' },
+        { key: 'pilotagem', label: 'Pilotagem', attr: 'agilidade', attrLabel: 'Agilidade' }
+      ],
+      tecnicas: [
+        { key: 'tecnologia', label: 'Tecnologia', attr: 'cognicao', attrLabel: 'Cognição' },
+        { key: 'medicina', label: 'Medicina', attr: 'cognicao', attrLabel: 'Cognição' },
+        { key: 'biomedicina', label: 'Bio-medicina', attr: 'cognicao', attrLabel: 'Cognição' },
+        { key: 'investigacao', label: 'Investigação', attr: 'cognicao', attrLabel: 'Cognição' },
+        { key: 'tatica', label: 'Tática', attr: 'cognicao', attrLabel: 'Cognição' },
+        { key: 'profissaoTreinada', label: 'Profissão:', attr: 'cognicao', attrLabel: 'Cognição', isProfession: true }
+      ],
+      mentais: [
+        { key: 'vontade', label: 'Vontade', attr: 'mente', attrLabel: 'Mente' },
+        { key: 'sobrevivencia', label: 'Sobrevivência', attr: 'mente', attrLabel: 'Mente' },
+        { key: 'influencia', label: 'Influência', attr: 'mente', attrLabel: 'Mente' },
+        { key: 'intuicao', label: 'Intuição', attr: 'mente', attrLabel: 'Mente' },
+        { key: 'percepcao', label: 'Percepção', attr: 'mente', attrLabel: 'Mente' }
+      ]
+    };
 
-    function getLuminance(hex) {
-      const clean = hex.replace('#', '');
-      const r = parseInt(clean.substring(0, 2), 16) / 255;
-      const g = parseInt(clean.substring(2, 4), 16) / 255;
-      const b = parseInt(clean.substring(4, 6), 16) / 255;
-      return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-    }
-
-    function applyTheme({ c60, c30, c10 }, persist = true) {
-      const root = document.documentElement;
-      const isLight30 = getLuminance(c30) > 0.52;
-      const isLight10 = getLuminance(c10) > 0.52;
-
-      root.style.setProperty('--color-60', c60);
-      root.style.setProperty('--color-30', c30);
-      root.style.setProperty('--color-10', c10);
-
-      root.style.setProperty('--text-main', isLight30 ? '#161513' : '#eae6df');
-      root.style.setProperty('--text-muted', isLight30 ? '#57524a' : '#8a847a');
-      root.style.setProperty('--text-on-accent', isLight10 ? '#121210' : '#ffffff');
-      root.style.setProperty('--border-color', isLight30 ? 'rgba(22, 21, 19, 0.22)' : 'rgba(234, 230, 223, 0.16)');
-      root.style.setProperty('--border-strong', isLight30 ? 'rgba(22, 21, 19, 0.42)' : 'rgba(234, 230, 223, 0.28)');
-      root.style.setProperty('--input-bg', isLight30 ? 'rgba(0, 0, 0, 0.06)' : 'rgba(0, 0, 0, 0.34)');
-      root.style.setProperty('--box-inner-bg', isLight30 ? 'rgba(0, 0, 0, 0.03)' : 'rgba(0, 0, 0, 0.22)');
-
-      pick60.value = c60;
-      pick30.value = c30;
-      pick10.value = c10;
-
-      if (persist) {
-        localStorage.setItem(THEME_KEY, JSON.stringify({ c60, c30, c10 }));
-      }
-    }
-
-    [pick60, pick30, pick10].forEach(el => {
-      el.addEventListener('input', () => {
-        presetBtns.forEach(b => b.classList.remove('active'));
-        applyTheme({ c60: pick60.value, c30: pick30.value, c10: pick10.value }, true);
-      });
-    });
-
-    presetBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const p = PRESETS[btn.dataset.preset];
-        if (!p) return;
-        presetBtns.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        applyTheme(p, true);
-      });
-    });
-
-    const SKILLS_LIST = [
-      // Linha 1
-      { id: 'luta', name: 'LUTA', attr: 'forca' },
-      { id: 'atletismo', name: 'ATLETISMO', attr: 'forca' },
-      { id: 'vontade', name: 'VONTADE', attr: 'mente' },
-      { id: 'tenacidade', name: 'TENACIDADE', attr: 'vigor' },
-      // Linha 2
-      { id: 'pontaria', name: 'PONTARIA', attr: 'agilidade' },
-      { id: 'furtividade', name: 'FURTIVIDADE', attr: 'agilidade' },
-      { id: 'reflexos', name: 'REFLEXOS', attr: 'agilidade' },
-      { id: 'prestidigitacao', name: 'PRESTIDIGITAÇÃO', attr: 'agilidade' },
-      // Linha 3
-      { id: 'pilotagem', name: 'PILOTAGEM', attr: 'agilidade' },
-      { id: 'tecnologia', name: 'TECNOLOGIA', attr: 'cognicao' },
-      { id: 'medicina', name: 'MEDICINA', attr: 'cognicao' },
-      { id: 'biomedicina', name: 'BIO-MEDICINA', attr: 'cognicao' },
-      // Linha 4
-      { id: 'investigacao', name: 'INVESTIGAÇÃO', attr: 'cognicao' },
-      { id: 'oficio', name: 'OFÍCIO', attr: 'cognicao' },
-      { id: 'profissao', name: 'PROF.:', attr: 'cognicao', isProf: true },
-      { id: 'verdade', name: 'VERDADE', attr: 'mente' },
-      // Linha 5
-      { id: 'sobrevivencia', name: 'SOBREVIVÊNCIA', attr: 'vigor' },
-      { id: 'influencia', name: 'INFLUÊNCIA', attr: 'mente' },
-      { id: 'intuicao', name: 'INTUIÇÃO', attr: 'mente' },
-      { id: 'percepcao', name: 'PERCEPÇÃO', attr: 'mente' }
-    ];
-
-    function getDefaultState() {
+    // Estado inicial padrão da ficha
+    function createDefaultState() {
       return {
-        nome: '',
-        jogador: '',
-        antecedente: '',
-        classe: '',
-        nivel: 1,
-        passado: '',
-        proteger: '',
-        attributes: {
+        theme: 'dark',
+        customTheme: {
+          c60: '#0e1318',
+          c30: '#161e27',
+          c10: '#f59e0b'
+        },
+        identificacao: {
+          nome: '',
+          jogador: '',
+          antecedente: '',
+          classe: '',
+          nivel: 1,
+          antesDoFim: '',
+          queroProteger: ''
+        },
+        atributos: {
           forca: 1,
           cognicao: 1,
           agilidade: 1,
           vigor: 1,
           mente: 1
         },
-        intCur: 10,
-        intMax: 10,
-        pulsoCur: 4,
-        pulsoMax: 4,
-        cas: 0,
-        estado: 'firme',
-        wear: [false, false, false],
-        esqDados: 1,
-        esqPostura: 0,
-        bloqDados: 1,
-        bloqPostura: 0,
-        trainedSkills: {},
-        profArea: '',
-        privilegio: '',
-        altNome: '',
-        altForma: '',
-        altPreco: '',
-        powers: [
-          { nivel: 1, nome: '', custo: '', efeito: '' },
-          { nivel: 1, nome: '', custo: '', efeito: '' },
-          { nivel: 1, nome: '', custo: '', efeito: '' }
+        recursos: {
+          integridadeAtual: 10,
+          integridadeMax: 10,
+          pulsoAtual: 6,
+          pulsoMax: 6,
+          reacaoDisponivel: true,
+          rd: 0
+        },
+        rotina: {
+          ancoras: {
+            dormir: false,
+            comer: false,
+            vinculo: false
+          },
+          estado: 'Firme',
+          desgaste: [false, false, false]
+        },
+        defesas: {
+          esquivaDados: 1,
+          esquivaPassiva: 0,
+          esquivaManual: false,
+          bloqueioDados: 1,
+          bloqueioPassiva: 0,
+          bloqueioManual: false
+        },
+        pericias: {
+          luta: false,
+          atletismo: false,
+          fortitude: false,
+          tolerancia: false,
+          pontaria: false,
+          furtividade: false,
+          reflexos: false,
+          prestidigitacao: false,
+          pilotagem: false,
+          tecnologia: false,
+          medicina: false,
+          biomedicina: false,
+          investigacao: false,
+          tatica: false,
+          profissaoTreinada: false,
+          profissaoNome: '',
+          vontade: false,
+          sobrevivencia: false,
+          influencia: false,
+          intuicao: false,
+          percepcao: false
+        },
+        privilegioAntecedente: '',
+        alteracaoDissonante: {
+          alteracao: '',
+          forma: '',
+          preco: ''
+        },
+        poderes: [
+          { nivel: '', nome: '', custo: '', efeito: '' },
+          { nivel: '', nome: '', custo: '', efeito: '' },
+          { nivel: '', nome: '', custo: '', efeito: '' },
+          { nivel: '', nome: '', custo: '', efeito: '' },
+          { nivel: '', nome: '', custo: '', efeito: '' }
         ],
-        weapons: [
-          { nome: '', dano: '', crit: '2', alcance: 'Curto/Médio', efeito: '', modificacao: '' },
-          { nome: '', dano: '', crit: '2', alcance: 'Curto/Médio', efeito: '', modificacao: '' }
+        proficiencias: {
+          armasSimples: false,
+          armasMarciais: false,
+          fogoLeve: false,
+          fogoPesado: false
+        },
+        armas: [
+          { arma: '', dano: '', crit: '', alcance: '', efeito: '', modificacao: '' },
+          { arma: '', dano: '', crit: '', alcance: '', efeito: '', modificacao: '' }
         ],
-        protTipo: '',
-        protNome: '',
-        protRd: 0,
-        supMunicao: 0,
-        supMedicos: 0,
-        supTecnico: 0,
-        supRacoes: 0,
-        mochila: '',
-        bonds: [
-          { alvo: '', relacao: '' },
-          { alvo: '', relacao: '' }
+        protecao: {
+          tipo: '',
+          item: '',
+          rd: 0
+        },
+        equipamento: {
+          municao: 0,
+          kitsPrimeirosSocorros: 0,
+          kitCirurgico: 0,
+          racoes: 0,
+          outros: ''
+        },
+        vinculos: [
+          { alvo: '', nota: '' },
+          { alvo: '', nota: '' },
+          { alvo: '', nota: '' }
         ],
-        anotacoes: '',
-        bools: {
-          reacao: true,
-          dormir: false,
-          comer: false,
-          vinculoDia: false,
-          profSimples: false,
-          profMarciais: false,
-          profFogoLeve: false,
-          profFogoPesado: false
-        }
+        anotacoes: ''
       };
     }
 
-    let state = getDefaultState();
+    let sheetState = createDefaultState();
+    let currentDicePool = 3;
+    let rollHistory = [];
+    let saveTimeout = null;
+    let toastTimeout = null;
 
+    // Mesclagem profunda segura para importar JSON sem quebrar campos ausentes
+    function deepMerge(target, source) {
+      if (!source || typeof source !== 'object') return target;
+      const output = Array.isArray(target) ? [...target] : { ...target };
+      for (const key of Object.keys(source)) {
+        if (source[key] !== null && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+          output[key] = deepMerge(target[key] || {}, source[key]);
+        } else {
+          output[key] = source[key];
+        }
+      }
+      return output;
+    }
+
+    // Carregar do localStorage
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          sheetState = deepMerge(createDefaultState(), parsed);
+        }
+      } catch (err) {
+        console.error('Erro ao carregar ficha do localStorage:', err);
+        sheetState = createDefaultState();
+      }
+    }
+
+    // Salvar automaticamente no localStorage com feedback visual
     function saveState() {
-      localStorage.setItem(DATA_KEY, JSON.stringify(state));
+      const saveText = document.getElementById('save-text');
+      const saveDot = document.getElementById('save-dot');
+      if (saveText) saveText.textContent = 'Salvando...';
+      if (saveDot) saveDot.style.backgroundColor = 'var(--accent-amber)';
+
+      clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(() => {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(sheetState));
+          if (saveText) saveText.textContent = 'Salvo no navegador';
+          if (saveDot) saveDot.style.backgroundColor = 'var(--accent-moss)';
+        } catch (err) {
+          console.error('Erro ao salvar no localStorage:', err);
+          if (saveText) saveText.textContent = 'Erro ao salvar';
+          if (saveDot) saveDot.style.backgroundColor = 'var(--accent-danger)';
+        }
+      }, 180);
+    }
+
+    // ==========================================================================
+    // CUSTOMIZAÇÃO DE CORES 60 / 30 / 10
+    // ==========================================================================
+    function hexToRgb(hex) {
+      const clean = (hex || '#000000').replace('#', '');
+      return {
+        r: parseInt(clean.substring(0, 2), 16) || 0,
+        g: parseInt(clean.substring(2, 4), 16) || 0,
+        b: parseInt(clean.substring(4, 6), 16) || 0
+      };
+    }
+
+    function getLuminance(hex) {
+      const { r, g, b } = hexToRgb(hex);
+      return (0.2126 * (r / 255)) + (0.7152 * (g / 255)) + (0.0722 * (b / 255));
+    }
+
+    function shiftHex(hex, amount) {
+      const { r, g, b } = hexToRgb(hex);
+      const clamp = (v) => Math.max(0, Math.min(255, Math.round(v + amount)));
+      const toHex = (v) => v.toString(16).padStart(2, '0');
+      return `#${toHex(clamp(r))}${toHex(clamp(g))}${toHex(clamp(b))}`;
+    }
+
+    function applyCustomPalette({ c60, c30, c10 }, persist = true) {
+      const root = document.documentElement;
+      const isLightSurface = getLuminance(c30) > 0.52;
+      const isLightAccent = getLuminance(c10) > 0.52;
+      const rgb60 = hexToRgb(c60);
+      const rgb10 = hexToRgb(c10);
+
+      root.style.setProperty('--color-60', c60);
+      root.style.setProperty('--color-30', c30);
+      root.style.setProperty('--color-10', c10);
+
+      root.style.setProperty('--bg-canvas', c60);
+      root.style.setProperty('--bg-card', c30);
+      root.style.setProperty('--bg-card-sub', isLightSurface ? shiftHex(c30, -10) : shiftHex(c30, 10));
+      root.style.setProperty('--bg-input', isLightSurface ? '#ffffff' : shiftHex(c60, 4));
+      root.style.setProperty('--bg-toolbar', `rgba(${rgb60.r}, ${rgb60.g}, ${rgb60.b}, 0.92)`);
+      root.style.setProperty('--bg-pattern', `rgba(${rgb10.r}, ${rgb10.g}, ${rgb10.b}, 0.045)`);
+
+      root.style.setProperty('--border-main', isLightSurface ? 'rgba(28, 33, 39, 0.24)' : 'rgba(255, 255, 255, 0.16)');
+      root.style.setProperty('--border-subtle', isLightSurface ? 'rgba(28, 33, 39, 0.14)' : 'rgba(255, 255, 255, 0.09)');
+
+      root.style.setProperty('--text-primary', isLightSurface ? '#1c2127' : '#eef2f6');
+      root.style.setProperty('--text-secondary', isLightSurface ? '#4b5563' : '#94a3b8');
+      root.style.setProperty('--text-muted', isLightSurface ? '#6b7280' : '#64748b');
+
+      root.style.setProperty('--accent-amber', c10);
+      root.style.setProperty('--accent-amber-soft', `rgba(${rgb10.r}, ${rgb10.g}, ${rgb10.b}, 0.14)`);
+      root.style.setProperty('--accent-amber-border', `rgba(${rgb10.r}, ${rgb10.g}, ${rgb10.b}, 0.42)`);
+      root.style.setProperty('--accent-on-10', isLightAccent ? '#111827' : '#ffffff');
+
+      const pick60 = document.getElementById('pick-60');
+      const pick30 = document.getElementById('pick-30');
+      const pick10 = document.getElementById('pick-10');
+      if (pick60) pick60.value = c60;
+      if (pick30) pick30.value = c30;
+      if (pick10) pick10.value = c10;
+
+      sheetState.customTheme = { c60, c30, c10 };
+      if (persist) saveState();
+    }
+
+    function applyPreset(presetKey) {
+      const preset = COLOR_PRESETS[presetKey];
+      if (!preset) return;
+      applyTheme(preset.baseTheme, false);
+      applyCustomPalette({ c60: preset.c60, c30: preset.c30, c10: preset.c10 }, true);
+      showToast(`Paleta "${presetKey.toUpperCase()}" aplicada.`);
+    }
+
+    function toggleCustomizerBar() {
+      const panel = document.getElementById('customizer-panel');
+      if (panel) panel.classList.toggle('hidden');
+    }
+
+    // Utilitário para ler/escrever caminhos aninhados no objeto de estado
+    function getByPath(obj, path) {
+      return path.split('.').reduce((acc, part) => (acc ? acc[part] : undefined), obj);
+    }
+
+    function setByPath(obj, path, value) {
+      const parts = path.split('.');
+      let current = obj;
+      for (let i = 0; i < parts.length - 1; i++) {
+        current = current[parts[i]];
+      }
+      current[parts[parts.length - 1]] = value;
+    }
+
+    // ==========================================================================
+    // RENDERIZAÇÃO DE PERÍCIAS E LISTAS DINÂMICAS
+    // ==========================================================================
+    function renderSkills() {
+      const containers = {
+        fisicas: document.getElementById('skills-fisicas'),
+        tecnicas: document.getElementById('skills-tecnicas'),
+        mentais: document.getElementById('skills-mentais')
+      };
+
+      Object.keys(SKILLS_CONFIG).forEach((groupKey) => {
+        const container = containers[groupKey];
+        container.innerHTML = '';
+
+        SKILLS_CONFIG[groupKey].forEach((skill) => {
+          const isTrained = Boolean(sheetState.pericias[skill.key]);
+          const row = document.createElement('div');
+          row.className = 'flex items-center justify-between gap-2 py-1 px-1.5 rounded-lg transition hover:bg-black/5 dark:hover:bg-white/5';
+
+          if (skill.isProfession) {
+            row.innerHTML = `
+              <div class="flex items-center gap-2 flex-1 min-w-0">
+                <input type="checkbox" data-path="pericias.${skill.key}" ${isTrained ? 'checked' : ''} class="tactical-check" />
+                <span class="text-xs sm:text-sm font-medium shrink-0">${skill.label}</span>
+                <input type="text" data-path="pericias.profissaoNome" value="${escapeHtml(sheetState.pericias.profissaoNome || '')}" class="dossier-input w-full min-w-0 rounded px-2 py-0.5 text-xs" placeholder="Especialidade..." />
+              </div>
+              <button type="button" onclick="rollSkill('${skill.key}', 'Profissão', '${skill.attr}')" class="no-print shrink-0 px-2 py-0.5 rounded text-[11px] font-mono font-semibold border transition hover:brightness-110" style="background-color: var(--bg-input); border-color: var(--border-main); color: var(--accent-amber);" title="Rolar ${skill.attrLabel} + Treino">
+                ${getSkillPool(skill.key, skill.attr)}d6
+              </button>
+            `;
+          } else {
+            row.innerHTML = `
+              <label class="flex items-center gap-2 cursor-pointer select-none flex-1 min-w-0">
+                <input type="checkbox" data-path="pericias.${skill.key}" ${isTrained ? 'checked' : ''} class="tactical-check" />
+                <span class="text-xs sm:text-sm font-medium truncate">${skill.label}</span>
+              </label>
+              <button type="button" onclick="rollSkill('${skill.key}', '${skill.label}', '${skill.attr}')" class="no-print shrink-0 px-2 py-0.5 rounded text-[11px] font-mono font-semibold border transition hover:brightness-110" style="background-color: var(--bg-input); border-color: var(--border-main); color: var(--accent-amber);" title="Rolar ${skill.attrLabel} + Treino">
+                ${getSkillPool(skill.key, skill.attr)}d6
+              </button>
+            `;
+          }
+
+          container.appendChild(row);
+        });
+      });
+    }
+
+    function renderPowers() {
+      const container = document.getElementById('powers-container');
+      container.innerHTML = '';
+
+      sheetState.poderes.forEach((power, index) => {
+        const row = document.createElement('div');
+        row.className = 'dossier-subcard rounded-xl p-3 grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-start relative';
+        row.innerHTML = `
+          <div class="sm:col-span-1">
+            <label class="block text-[10px] font-mono uppercase tracking-wider mb-1" style="color: var(--text-secondary);">Nível</label>
+            <input type="text" value="${escapeHtml(power.nivel)}" oninput="updateArrayItem('poderes', ${index}, 'nivel', this.value)" class="dossier-input w-full text-center font-mono font-bold rounded-lg px-2 py-1.5 text-xs sm:text-sm" placeholder="1" />
+          </div>
+          <div class="sm:col-span-3">
+            <label class="block text-[10px] font-mono uppercase tracking-wider mb-1" style="color: var(--text-secondary);">Poder</label>
+            <input type="text" value="${escapeHtml(power.nome)}" oninput="updateArrayItem('poderes', ${index}, 'nome', this.value)" class="dossier-input w-full rounded-lg px-2.5 py-1.5 text-xs sm:text-sm font-medium" placeholder="Nome do poder" />
+          </div>
+          <div class="sm:col-span-2">
+            <label class="block text-[10px] font-mono uppercase tracking-wider mb-1" style="color: var(--text-secondary);">Custo</label>
+            <input type="text" value="${escapeHtml(power.custo)}" oninput="updateArrayItem('poderes', ${index}, 'custo', this.value)" class="dossier-input w-full rounded-lg px-2.5 py-1.5 text-xs sm:text-sm font-mono" placeholder="Ex.: 1 Pulso" />
+          </div>
+          <div class="sm:col-span-5">
+            <label class="block text-[10px] font-mono uppercase tracking-wider mb-1" style="color: var(--text-secondary);">Efeito</label>
+            <textarea rows="1" oninput="updateArrayItem('poderes', ${index}, 'efeito', this.value); autoResizeTextarea(this);" class="dossier-input auto-grow w-full rounded-lg px-2.5 py-1.5 text-xs sm:text-sm" placeholder="Descrição do efeito e regras...">${escapeHtml(power.efeito)}</textarea>
+          </div>
+          <div class="sm:col-span-1 flex sm:justify-end sm:pt-5 no-print">
+            <button type="button" onclick="removeArrayRow('poderes', ${index})" class="px-2 py-1 rounded-md text-xs border transition hover:opacity-85" style="border-color: rgba(239,68,68,0.35); color: var(--accent-danger);" title="Remover poder">
+              Remover
+            </button>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+
+      refreshAllTextareas();
+    }
+
+    function renderWeapons() {
+      const container = document.getElementById('weapons-container');
+      container.innerHTML = '';
+
+      sheetState.armas.forEach((weapon, index) => {
+        const card = document.createElement('div');
+        card.className = 'dossier-subcard rounded-xl p-3 grid grid-cols-2 sm:grid-cols-12 gap-2.5 items-end';
+        card.innerHTML = `
+          <div class="col-span-2 sm:col-span-3">
+            <label class="block text-[10px] font-mono uppercase tracking-wider mb-1" style="color: var(--text-secondary);">Arma</label>
+            <input type="text" value="${escapeHtml(weapon.arma)}" oninput="updateArrayItem('armas', ${index}, 'arma', this.value)" class="dossier-input w-full rounded-lg px-2.5 py-1.5 text-xs sm:text-sm font-medium" placeholder="Ex.: Bastão, Pistola 9mm..." />
+          </div>
+          <div class="col-span-1 sm:col-span-2">
+            <label class="block text-[10px] font-mono uppercase tracking-wider mb-1" style="color: var(--text-secondary);">Dano</label>
+            <input type="text" value="${escapeHtml(weapon.dano)}" oninput="updateArrayItem('armas', ${index}, 'dano', this.value)" class="dossier-input w-full rounded-lg px-2.5 py-1.5 text-xs sm:text-sm font-mono" placeholder="Ex.: 1d6+2" />
+          </div>
+          <div class="col-span-1 sm:col-span-1">
+            <label class="block text-[10px] font-mono uppercase tracking-wider mb-1" style="color: var(--text-secondary);">Crit</label>
+            <input type="text" value="${escapeHtml(weapon.crit)}" oninput="updateArrayItem('armas', ${index}, 'crit', this.value)" class="dossier-input w-full text-center rounded-lg px-2 py-1.5 text-xs sm:text-sm font-mono" placeholder="6" />
+          </div>
+          <div class="col-span-1 sm:col-span-2">
+            <label class="block text-[10px] font-mono uppercase tracking-wider mb-1" style="color: var(--text-secondary);">Alcance</label>
+            <input type="text" value="${escapeHtml(weapon.alcance)}" oninput="updateArrayItem('armas', ${index}, 'alcance', this.value)" class="dossier-input w-full rounded-lg px-2.5 py-1.5 text-xs sm:text-sm" placeholder="Curto / Médio" />
+          </div>
+          <div class="col-span-1 sm:col-span-2">
+            <label class="block text-[10px] font-mono uppercase tracking-wider mb-1" style="color: var(--text-secondary);">Efeito</label>
+            <input type="text" value="${escapeHtml(weapon.efeito)}" oninput="updateArrayItem('armas', ${index}, 'efeito', this.value)" class="dossier-input w-full rounded-lg px-2.5 py-1.5 text-xs sm:text-sm" placeholder="Corte, atordoar..." />
+          </div>
+          <div class="col-span-2 sm:col-span-2 flex items-end gap-1.5">
+            <div class="flex-1">
+              <label class="block text-[10px] font-mono uppercase tracking-wider mb-1" style="color: var(--text-secondary);">Modificação</label>
+              <input type="text" value="${escapeHtml(weapon.modificacao)}" oninput="updateArrayItem('armas', ${index}, 'modificacao', this.value)" class="dossier-input w-full rounded-lg px-2.5 py-1.5 text-xs sm:text-sm" placeholder="Mira, empunhadura..." />
+            </div>
+            <button type="button" onclick="removeArrayRow('armas', ${index})" class="no-print p-2 rounded-lg border transition hover:opacity-85 shrink-0" style="border-color: rgba(239,68,68,0.35); color: var(--accent-danger);" title="Remover arma" aria-label="Remover arma">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            </button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function renderBonds() {
+      const container = document.getElementById('bonds-container');
+      container.innerHTML = '';
+
+      sheetState.vinculos.forEach((bond, index) => {
+        const row = document.createElement('div');
+        row.className = 'dossier-subcard rounded-xl p-2.5 grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-center';
+        row.innerHTML = `
+          <div class="sm:col-span-4">
+            <label class="sm:hidden block text-[10px] font-mono uppercase tracking-wider mb-1" style="color: var(--text-secondary);">Pessoa / Grupo / Lugar</label>
+            <input type="text" value="${escapeHtml(bond.alvo)}" oninput="updateArrayItem('vinculos', ${index}, 'alvo', this.value)" class="dossier-input w-full rounded-lg px-3 py-1.5 text-xs sm:text-sm font-medium" placeholder="Pessoa, grupo ou abrigo..." />
+          </div>
+          <div class="sm:col-span-7">
+            <label class="sm:hidden block text-[10px] font-mono uppercase tracking-wider mb-1" style="color: var(--text-secondary);">Relação / Promessa / Nota</label>
+            <input type="text" value="${escapeHtml(bond.nota)}" oninput="updateArrayItem('vinculos', ${index}, 'nota', this.value)" class="dossier-input w-full rounded-lg px-3 py-1.5 text-xs sm:text-sm" placeholder="O que une vocês ou o que foi prometido..." />
+          </div>
+          <div class="sm:col-span-1 flex justify-end no-print">
+            <button type="button" onclick="removeArrayRow('vinculos', ${index})" class="px-2 py-1 rounded-md text-xs border transition hover:opacity-85" style="border-color: rgba(239,68,68,0.35); color: var(--accent-danger);" title="Remover vínculo">
+              Remover
+            </button>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    // Manipuladores de arrays dinâmicos
+    function updateArrayItem(arrayKey, index, field, value) {
+      if (sheetState[arrayKey] && sheetState[arrayKey][index]) {
+        sheetState[arrayKey][index][field] = value;
+        saveState();
+      }
+    }
+
+    function addPowerRow() {
+      sheetState.poderes.push({ nivel: '', nome: '', custo: '', efeito: '' });
+      renderPowers();
+      saveState();
+    }
+
+    function addWeaponRow() {
+      sheetState.armas.push({ arma: '', dano: '', crit: '', alcance: '', efeito: '', modificacao: '' });
+      renderWeapons();
+      saveState();
+    }
+
+    function addBondRow() {
+      sheetState.vinculos.push({ alvo: '', nota: '' });
+      renderBonds();
+      saveState();
+    }
+
+    function removeArrayRow(arrayKey, index) {
+      sheetState[arrayKey].splice(index, 1);
+      if (arrayKey === 'poderes') renderPowers();
+      if (arrayKey === 'armas') renderWeapons();
+      if (arrayKey === 'vinculos') renderBonds();
+      saveState();
+    }
+
+    // ==========================================================================
+    // SINCRONIZAÇÃO DE INTERFACE, CÁLCULOS AUTOMÁTICOS E STATUS VISUAIS
+    // ==========================================================================
+    function syncAllInputsFromState() {
+      document.querySelectorAll('[data-path]').forEach((el) => {
+        const path = el.getAttribute('data-path');
+        const val = getByPath(sheetState, path);
+        if (el.type === 'checkbox') {
+          el.checked = Boolean(val);
+        } else if (val !== undefined && val !== null) {
+          el.value = val;
+        }
+      });
+
+      // Sincronizar checkboxes de Estado da Rotina
+      document.querySelectorAll('.estado-checkbox').forEach((cb) => {
+        cb.checked = cb.value === sheetState.rotina.estado;
+      });
+
+      updateDerivedMechanics();
+      refreshAllTextareas();
+    }
+
+    function updateDerivedMechanics() {
+      // 1. Etiquetas rápidas de dados nos atributos
+      ['forca', 'cognicao', 'agilidade', 'vigor', 'mente'].forEach((attr) => {
+        const val = Math.max(0, parseInt(sheetState.atributos[attr], 10) || 0);
+        const labelEl = document.getElementById(`roll-label-${attr}`);
+        if (labelEl) labelEl.textContent = `${val}d6`;
+      });
+
+      // 2. Defesas automáticas (Esquiva = Agilidade + Reflexos, Bloqueio = Vigor + Fortitude)
+      const agi = Math.max(0, parseInt(sheetState.atributos.agilidade, 10) || 0);
+      const refBonus = sheetState.pericias.reflexos ? 2 : 0;
+      const autoEsquiva = agi + refBonus;
+
+      if (!sheetState.defesas.esquivaManual) {
+        sheetState.defesas.esquivaDados = autoEsquiva;
+        const esqInput = document.getElementById('def-esquiva-dados');
+        if (esqInput) esqInput.value = autoEsquiva;
+        document.getElementById('sync-esquiva-btn')?.classList.add('hidden');
+      } else {
+        document.getElementById('sync-esquiva-btn')?.classList.remove('hidden');
+      }
+
+      const vig = Math.max(0, parseInt(sheetState.atributos.vigor, 10) || 0);
+      const fortBonus = sheetState.pericias.fortitude ? 2 : 0;
+      const autoBloqueio = vig + fortBonus;
+
+      if (!sheetState.defesas.bloqueioManual) {
+        sheetState.defesas.bloqueioDados = autoBloqueio;
+        const bloqInput = document.getElementById('def-bloqueio-dados');
+        if (bloqInput) bloqInput.value = autoBloqueio;
+        document.getElementById('sync-bloqueio-btn')?.classList.add('hidden');
+      } else {
+        document.getElementById('sync-bloqueio-btn')?.classList.remove('hidden');
+      }
+
+      // 3. Status automático de Integridade (Saudável, Ferido abaixo da metade, Morrendo em 0)
+      const intAtual = parseInt(sheetState.recursos.integridadeAtual, 10) || 0;
+      const intMax = parseInt(sheetState.recursos.integridadeMax, 10) || 0;
+      const badgeInt = document.getElementById('badge-integridade');
+      if (badgeInt) {
+        if (intAtual <= 0) {
+          badgeInt.textContent = 'Morrendo';
+          badgeInt.style.backgroundColor = 'var(--accent-danger-soft)';
+          badgeInt.style.color = 'var(--accent-danger)';
+          badgeInt.style.border = '1px solid rgba(239,68,68,0.45)';
+        } else if (intMax > 0 && intAtual < intMax / 2) {
+          badgeInt.textContent = 'Ferido';
+          badgeInt.style.backgroundColor = 'var(--accent-amber-soft)';
+          badgeInt.style.color = 'var(--accent-amber)';
+          badgeInt.style.border = '1px solid var(--accent-amber-border)';
+        } else {
+          badgeInt.textContent = 'Saudável';
+          badgeInt.style.backgroundColor = 'var(--accent-moss-soft)';
+          badgeInt.style.color = 'var(--accent-moss)';
+          badgeInt.style.border = '1px solid var(--accent-moss-border)';
+        }
+      }
+
+      // 4. Status automático de Pulso (Colapso em 0)
+      const pulsoAtual = parseInt(sheetState.recursos.pulsoAtual, 10) || 0;
+      const badgePulso = document.getElementById('badge-pulso');
+      if (badgePulso) {
+        if (pulsoAtual <= 0) {
+          badgePulso.classList.remove('hidden');
+          badgePulso.style.backgroundColor = 'var(--accent-danger-soft)';
+          badgePulso.style.color = 'var(--accent-danger)';
+          badgePulso.style.border = '1px solid rgba(239,68,68,0.45)';
+        } else {
+          badgePulso.classList.add('hidden');
+        }
+      }
+
+      // 5. Aviso automático "ESGOTADO" nos Marcadores de Desgaste
+      const desgasteArr = sheetState.rotina.desgaste || [false, false, false];
+      const isExhausted = desgasteArr[0] && desgasteArr[1] && desgasteArr[2];
+      const badgeEsgotado = document.getElementById('badge-esgotado');
+      if (badgeEsgotado) {
+        badgeEsgotado.classList.toggle('hidden', !isExhausted);
+      }
+
+      // 6. Destaque sutil na seção Alteração quando Classe / Caminho for Dissonante
+      const classeStr = (sheetState.identificacao.classe || '').toLowerCase();
+      const isDissonant = classeStr.includes('dissonante');
+      const cardDiss = document.getElementById('card-dissonante');
+      const badgeDiss = document.getElementById('badge-dissonante');
+      const dotDiss = document.getElementById('dot-dissonante');
+
+      if (cardDiss && badgeDiss && dotDiss) {
+        if (isDissonant) {
+          cardDiss.classList.add('dissonant-active');
+          badgeDiss.classList.remove('hidden');
+          dotDiss.style.backgroundColor = 'var(--accent-dissonant)';
+        } else {
+          cardDiss.classList.remove('dissonant-active');
+          badgeDiss.classList.add('hidden');
+          dotDiss.style.backgroundColor = 'var(--text-muted)';
+        }
+      }
+
+      // Atualizar paradas exibidas nos botões das perícias
+      renderSkills();
+    }
+
+    function markDefenseManual(type) {
+      if (type === 'esquiva') sheetState.defesas.esquivaManual = true;
+      if (type === 'bloqueio') sheetState.defesas.bloqueioManual = true;
+      updateDerivedMechanics();
+      saveState();
+    }
+
+    function resetDefenseSync(type) {
+      if (type === 'esquiva') sheetState.defesas.esquivaManual = false;
+      if (type === 'bloqueio') sheetState.defesas.bloqueioManual = false;
+      updateDerivedMechanics();
+      saveState();
+      showToast('Defesa sincronizada com atributo e perícia.');
+    }
+
+    function selectEstado(valor) {
+      sheetState.rotina.estado = sheetState.rotina.estado === valor ? '' : valor;
+      document.querySelectorAll('.estado-checkbox').forEach((cb) => {
+        cb.checked = cb.value === sheetState.rotina.estado;
+      });
+      saveState();
+    }
+
+    function adjustNumber(path, delta) {
+      const current = parseInt(getByPath(sheetState, path), 10) || 0;
+      const next = Math.max(0, current + delta);
+      setByPath(sheetState, path, next);
+
+      const inputEl = document.querySelector(`[data-path="${path}"]`);
+      if (inputEl) inputEl.value = next;
+
+      updateDerivedMechanics();
+      saveState();
+    }
+
+    // Delegação global de eventos para inputs e checkboxes com data-path
+    document.addEventListener('input', (e) => {
+      const target = e.target;
+
+      // Eventos dos seletores de cor 60 / 30 / 10
+      if (target.id === 'pick-60' || target.id === 'pick-30' || target.id === 'pick-10') {
+        applyCustomPalette({
+          c60: document.getElementById('pick-60').value,
+          c30: document.getElementById('pick-30').value,
+          c10: document.getElementById('pick-10').value
+        }, true);
+        return;
+      }
+
+      const path = target.getAttribute('data-path');
+      if (!path) return;
+
+      if (target.type === 'number') {
+        const parsed = target.value === '' ? 0 : parseInt(target.value, 10);
+        setByPath(sheetState, path, isNaN(parsed) ? 0 : parsed);
+      } else if (target.type !== 'checkbox') {
+        setByPath(sheetState, path, target.value);
+      }
+
+      if (target.classList.contains('auto-grow')) {
+        autoResizeTextarea(target);
+      }
+
+      updateDerivedMechanics();
+      saveState();
+    });
+
+    document.addEventListener('change', (e) => {
+      const target = e.target;
+      const path = target.getAttribute('data-path');
+      if (!path) return;
+
+      if (target.type === 'checkbox') {
+        setByPath(sheetState, path, target.checked);
+        updateDerivedMechanics();
+        saveState();
+      }
+    });
+
+    // ==========================================================================
+    // ROLADOR VISUAL DE d6 (1d6 a 10d6+) + SOM SINTETIZADO OPCIONAL
+    // ==========================================================================
+    function getSkillPool(skillKey, attrKey) {
+      const base = Math.max(0, parseInt(sheetState.atributos[attrKey], 10) || 0);
+      const bonus = sheetState.pericias[skillKey] ? 2 : 0;
+      return base + bonus;
+    }
+
+    function rollFromAttribute(attrKey, attrLabel) {
+      const count = Math.max(1, parseInt(sheetState.atributos[attrKey], 10) || 1);
+      openDiceModal(count, `Teste de ${attrLabel}`, `Atributo base (${count}d6)`);
+    }
+
+    function rollSkill(skillKey, skillLabel, attrKey) {
+      const base = Math.max(0, parseInt(sheetState.atributos[attrKey], 10) || 0);
+      const isTrained = Boolean(sheetState.pericias[skillKey]);
+      const total = Math.max(1, base + (isTrained ? 2 : 0));
+      const detail = isTrained
+        ? `Atributo (${base}) + Treinada (+2) = ${total}d6`
+        : `Atributo (${base}) + Não treinada (0) = ${total}d6`;
+      openDiceModal(total, `Perícia: ${skillLabel}`, detail);
+    }
+
+    function rollDefense(defKey, defLabel) {
+      const field = defKey === 'esquiva' ? 'esquivaDados' : 'bloqueioDados';
+      const total = Math.max(1, parseInt(sheetState.defesas[field], 10) || 1);
+      openDiceModal(total, `Defesa: ${defLabel}`, `Parada de defesa (${total}d6)`);
+    }
+
+    function openDiceModal(pool = null, title = 'Rolagem Rápida', subtitle = 'Escolha a quantidade de dados de 6 lados') {
+      const modal = document.getElementById('dice-modal');
+      document.getElementById('dice-modal-title').textContent = title;
+      document.getElementById('dice-modal-subtitle').textContent = subtitle;
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+
+      const diceToRoll = pool !== null ? pool : currentDicePool;
+      rollDice(diceToRoll, title);
+    }
+
+    function closeDiceModal() {
+      const modal = document.getElementById('dice-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function changeDicePool(delta) {
+      const next = Math.min(20, Math.max(1, currentDicePool + delta));
+      rollDice(next);
+    }
+
+    function playDiceClickSound() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(320, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(110, ctx.currentTime + 0.06);
+        gain.gain.setValueAtTime(0.08, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.065);
+      } catch (_) {}
+    }
+
+    function rollDice(count, customContext = null) {
+      currentDicePool = Math.min(20, Math.max(1, parseInt(count, 10) || 1));
+      document.getElementById('dice-pool-display').textContent = `${currentDicePool}d6`;
+
+      // Destacar botão preset ativo (1d6 a 10d6)
+      document.querySelectorAll('.dice-preset-btn').forEach((btn, idx) => {
+        const n = idx + 1;
+        if (n === currentDicePool) {
+          btn.style.backgroundColor = 'var(--accent-amber)';
+          btn.style.color = 'var(--accent-on-10)';
+          btn.style.borderColor = 'var(--accent-amber)';
+        } else {
+          btn.style.backgroundColor = 'var(--bg-card-sub)';
+          btn.style.color = 'var(--text-primary)';
+          btn.style.borderColor = 'var(--border-main)';
+        }
+      });
+
+      const results = [];
+      for (let i = 0; i < currentDicePool; i++) {
+        results.push(Math.floor(Math.random() * 6) + 1);
+      }
+
+      playDiceClickSound();
+
+      const grid = document.getElementById('dice-results-grid');
+      grid.innerHTML = '';
+
+      results.forEach((val, idx) => {
+        const dieEl = document.createElement('div');
+        dieEl.style.animationDelay = `${idx * 25}ms`;
+        dieEl.className = 'die-animate w-12 h-12 rounded-xl flex items-center justify-center border-2 shadow-md';
+
+        if (val === 6) {
+          dieEl.style.backgroundColor = 'var(--accent-amber-soft)';
+          dieEl.style.borderColor = 'var(--accent-amber)';
+          dieEl.style.color = 'var(--accent-amber)';
+        } else if (val === 5) {
+          dieEl.style.backgroundColor = 'var(--accent-moss-soft)';
+          dieEl.style.borderColor = 'var(--accent-moss)';
+          dieEl.style.color = 'var(--accent-moss)';
+        } else {
+          dieEl.style.backgroundColor = 'var(--bg-input)';
+          dieEl.style.borderColor = 'var(--border-main)';
+          dieEl.style.color = 'var(--text-secondary)';
+        }
+
+        dieEl.innerHTML = renderDieSvg(val);
+        grid.appendChild(dieEl);
+      });
+
+      const maxVal = Math.max(...results);
+      const successes = results.filter((v) => v >= 5).length;
+      const sumVal = results.reduce((a, b) => a + b, 0);
+
+      document.getElementById('dice-stat-max').textContent = maxVal;
+      document.getElementById('dice-stat-success').textContent = successes;
+      document.getElementById('dice-stat-sum').textContent = sumVal;
+
+      const label = customContext || document.getElementById('dice-modal-title').textContent;
+      rollHistory.unshift({
+        label,
+        pool: currentDicePool,
+        results,
+        maxVal,
+        successes
+      });
+      rollHistory = rollHistory.slice(0, 5);
+      renderRollHistory();
+    }
+
+    function renderDieSvg(face) {
+      const pips = {
+        1: [[12, 12]],
+        2: [[7.5, 7.5], [16.5, 16.5]],
+        3: [[7.5, 7.5], [12, 12], [16.5, 16.5]],
+        4: [[7.5, 7.5], [16.5, 7.5], [7.5, 16.5], [16.5, 16.5]],
+        5: [[7.5, 7.5], [16.5, 7.5], [12, 12], [7.5, 16.5], [16.5, 16.5]],
+        6: [[7.5, 6.8], [16.5, 6.8], [7.5, 12], [16.5, 12], [7.5, 17.2], [16.5, 17.2]]
+      };
+      const circles = (pips[face] || pips[1])
+        .map(([cx, cy]) => `<circle cx="${cx}" cy="${cy}" r="1.9" fill="currentColor" />`)
+        .join('');
+      return `<svg class="w-8 h-8" viewBox="0 0 24 24">${circles}</svg>`;
+    }
+
+    function renderRollHistory() {
+      const list = document.getElementById('dice-history-list');
+      if (!rollHistory.length) return;
+      list.innerHTML = rollHistory
+        .map(
+          (item) => `
+          <div class="flex items-center justify-between gap-2 py-0.5">
+            <span class="truncate">${escapeHtml(item.label)} (${item.pool}d6)</span>
+            <span class="shrink-0 font-bold" style="color: var(--text-primary);">[${item.results.join(', ')}] · Maior: ${item.maxVal}</span>
+          </div>
+        `
+        )
+        .join('');
+    }
+
+    // ==========================================================================
+    // TEMA, IMPRESSÃO A4, EXPORTAÇÃO / IMPORTAÇÃO JSON E LIMPEZA
+    // ==========================================================================
+    function applyTheme(themeName, resetCustom = true) {
+      const theme = themeName === 'paper' ? 'paper' : 'dark';
+      sheetState.theme = theme;
+      document.documentElement.setAttribute('data-theme', theme);
+
+      const sunIcon = document.getElementById('theme-icon-sun');
+      const moonIcon = document.getElementById('theme-icon-moon');
+      const themeLabel = document.getElementById('theme-label');
+
+      if (theme === 'paper') {
+        sunIcon.classList.add('hidden');
+        moonIcon.classList.remove('hidden');
+        if (themeLabel) themeLabel.textContent = 'Modo Noturno';
+        if (resetCustom) applyCustomPalette(COLOR_PRESETS.papel, false);
+      } else {
+        sunIcon.classList.remove('hidden');
+        moonIcon.classList.add('hidden');
+        if (themeLabel) themeLabel.textContent = 'Modo Papel';
+        if (resetCustom) applyCustomPalette(COLOR_PRESETS.ardosia, false);
+      }
+    }
+
+    function toggleTheme() {
+      const nextTheme = sheetState.theme === 'dark' ? 'paper' : 'dark';
+      applyTheme(nextTheme, true);
+      saveState();
+      showToast(nextTheme === 'paper' ? 'Modo Papel ativado.' : 'Modo Noturno (Ardósia & Âmbar) ativado.');
+    }
+
+    function printSheet() {
+      refreshAllTextareas();
+      window.print();
+    }
+
+    function exportJSON() {
+      try {
+        const rawName = (sheetState.identificacao.nome || 'sobrevivente')
+          .trim()
+          .toLowerCase()
+          .replace(/[^a-z0-9áéíóúâêôãõç_-]+/gi, '_');
+        const filename = `ficha_${rawName || 'sobrevivente'}.json`;
+        const blob = new Blob([JSON.stringify(sheetState, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        showToast('Ficha exportada em JSON com sucesso.');
+      } catch (err) {
+        console.error('Erro ao exportar JSON:', err);
+        showToast('Não foi possível exportar o arquivo JSON.');
+      }
+    }
+
+    function importJSON(event) {
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (!parsed || typeof parsed !== 'object') {
+            throw new Error('Formato inválido');
+          }
+          sheetState = deepMerge(createDefaultState(), parsed);
+          applyTheme(sheetState.theme, false);
+          if (sheetState.customTheme) {
+            applyCustomPalette(sheetState.customTheme, false);
+          }
+          renderPowers();
+          renderWeapons();
+          renderBonds();
+          syncAllInputsFromState();
+          saveState();
+          showToast('Ficha importada com sucesso!');
+        } catch (err) {
+          console.error('Erro ao importar JSON:', err);
+          showToast('Arquivo JSON inválido ou corrompido.');
+        } finally {
+          event.target.value = '';
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function openConfirmClearModal() {
+      const modal = document.getElementById('confirm-clear-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeConfirmClearModal() {
+      const modal = document.getElementById('confirm-clear-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function confirmClearSheet() {
+      const currentTheme = sheetState.theme;
+      const currentCustom = { ...sheetState.customTheme };
+      sheetState = createDefaultState();
+      sheetState.theme = currentTheme;
+      sheetState.customTheme = currentCustom;
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch (_) {}
+
+      renderPowers();
+      renderWeapons();
+      renderBonds();
+      syncAllInputsFromState();
+      saveState();
+      closeConfirmClearModal();
+      showToast('Ficha limpa e restaurada para o padrão.');
+    }
+
+    // ==========================================================================
+    // UTILITÁRIOS DE TEXTAREA AUTO-EXPANSÍVEL, ESCAPE E TOAST
+    // ==========================================================================
+    function autoResizeTextarea(el) {
+      if (!el) return;
+      el.style.height = 'auto';
+      el.style.height = `${el.scrollHeight}px`;
+    }
+
+    function refreshAllTextareas() {
+      document.querySelectorAll('textarea.auto-grow').forEach((ta) => autoResizeTextarea(ta));
     }
 
     function escapeHtml(str) {
@@ -1484,528 +2155,47 @@
         .replace(/"/g, '&quot;');
     }
 
+    function showToast(message) {
+      const banner = document.getElementById('toast-banner');
+      const msgEl = document.getElementById('toast-message');
+      if (!banner || !msgEl) return;
 
-    function updateVitalBadges() {
-      const intCur = parseInt(state.intCur, 10) || 0;
-      const intMax = Math.max(1, parseInt(state.intMax, 10) || 1);
-      const badgeInt = document.getElementById('badge-integridade');
+      msgEl.textContent = message;
+      banner.classList.remove('hidden');
+      banner.classList.add('flex');
 
-      badgeInt.className = 'status-badge';
-      if (intCur <= 0) {
-        badgeInt.textContent = 'COLAPSO';
-        badgeInt.classList.add('danger');
-      } else if (intCur <= Math.floor(intMax / 2)) {
-        badgeInt.textContent = 'CRÍTICO';
-        badgeInt.classList.add('danger');
-      } else if (intCur < intMax) {
-        badgeInt.textContent = 'FERIDO';
-        badgeInt.classList.add('warn');
-      } else {
-        badgeInt.textContent = 'SAUDÁVEL';
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        banner.classList.add('hidden');
+        banner.classList.remove('flex');
+      }, 3200);
+    }
+
+    // Fechar modais com tecla Escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeDiceModal();
+        closeConfirmClearModal();
       }
+    });
 
-      const pulsoCur = parseInt(state.pulsoCur, 10) || 0;
-      const pulsoMax = Math.max(1, parseInt(state.pulsoMax, 10) || 1);
-      const badgePulso = document.getElementById('badge-pulso');
+    // Garantir ajuste de altura antes da impressão do navegador
+    window.addEventListener('beforeprint', refreshAllTextareas);
 
-      badgePulso.className = 'status-badge';
-      if (pulsoCur <= 0) {
-        badgePulso.textContent = 'COLAPSO';
-        badgePulso.classList.add('danger');
-      } else if (pulsoCur <= Math.floor(pulsoMax / 2)) {
-        badgePulso.textContent = 'BAIXO';
-        badgePulso.classList.add('warn');
-      } else {
-        badgePulso.textContent = 'ATIVO';
+    // ==========================================================================
+    // INICIALIZAÇÃO
+    // ==========================================================================
+    window.addEventListener('DOMContentLoaded', () => {
+      loadState();
+      applyTheme(sheetState.theme, false);
+      if (sheetState.customTheme) {
+        applyCustomPalette(sheetState.customTheme, false);
       }
-    }
-
-    function stepNumber(field, delta) {
-      const current = parseInt(state[field], 10) || 0;
-      const next = Math.max(0, current + delta);
-      state[field] = next;
-      const inp = document.getElementById(`f-${field}`);
-      if (inp) inp.value = next;
-      updateVitalBadges();
-      saveState();
-    }
-
-    function renderSkills() {
-      const grid = document.getElementById('skills-grid');
-      grid.innerHTML = '';
-
-      SKILLS_LIST.forEach(skill => {
-        const isTrained = !!state.trainedSkills[skill.id];
-        const item = document.createElement('div');
-        item.className = 'skill-item';
-
-        if (skill.isProf) {
-          item.innerHTML = `
-            <div class="skill-left">
-              <label class="custom-check">
-                <input type="checkbox" ${isTrained ? 'checked' : ''} data-skill-check="${skill.id}" />
-                <span class="skill-label-text">${skill.name}</span>
-              </label>
-              <input type="text" class="prof-inline-input" id="f-profArea" value="${escapeHtml(state.profArea)}" placeholder="Área..." />
-            </div>
-            <button type="button" class="btn-rol-tag" onclick="rollSkill('${skill.id}')">ROL</button>
-          `;
-        } else {
-          item.innerHTML = `
-            <label class="custom-check skill-left" title="${skill.name}">
-              <input type="checkbox" ${isTrained ? 'checked' : ''} data-skill-check="${skill.id}" />
-              <span class="skill-label-text">${skill.name}</span>
-            </label>
-            <button type="button" class="btn-rol-tag" onclick="rollSkill('${skill.id}')">ROL</button>
-          `;
-        }
-
-        grid.appendChild(item);
-      });
-
-      grid.querySelectorAll('[data-skill-check]').forEach(chk => {
-        chk.addEventListener('change', e => {
-          state.trainedSkills[e.target.dataset.skillCheck] = e.target.checked;
-          saveState();
-        });
-      });
-
-      const profInp = document.getElementById('f-profArea');
-      if (profInp) {
-        profInp.addEventListener('input', e => {
-          state.profArea = e.target.value;
-          saveState();
-        });
-      }
-    }
-
-    function renderPowers() {
-      const container = document.getElementById('powers-list');
-      container.innerHTML = '';
-
-      state.powers.forEach((pow, idx) => {
-        const row = document.createElement('div');
-        row.className = 'power-row';
-        row.innerHTML = `
-          <div class="field-group">
-            <label class="micro-label">NÍVEL</label>
-            <input type="number" value="${pow.nivel}" min="1" data-pfield="nivel" />
-          </div>
-          <div class="field-group">
-            <label class="micro-label">PODER</label>
-            <input type="text" value="${escapeHtml(pow.nome)}" placeholder="Nome do poder" data-pfield="nome" />
-          </div>
-          <div class="field-group">
-            <label class="micro-label">CUSTO</label>
-            <input type="text" value="${escapeHtml(pow.custo)}" placeholder="Ex.: 1 Pulso" data-pfield="custo" />
-          </div>
-          <div class="field-group">
-            <label class="micro-label">EFEITO</label>
-            <input type="text" value="${escapeHtml(pow.efeito)}" placeholder="Descrição mecânica e narrativa..." data-pfield="efeito" />
-          </div>
-          <button type="button" class="btn-del-row" title="Remover poder" onclick="removePower(${idx})">X</button>
-        `;
-
-        row.querySelectorAll('input').forEach(inp => {
-          inp.addEventListener('input', e => {
-            const f = e.target.dataset.pfield;
-            state.powers[idx][f] = f === 'nivel' ? (parseInt(e.target.value, 10) || 1) : e.target.value;
-            saveState();
-          });
-        });
-
-        container.appendChild(row);
-      });
-    }
-
-    function removePower(idx) {
-      state.powers.splice(idx, 1);
-      renderPowers();
-      saveState();
-    }
-
-    document.getElementById('btn-add-power').addEventListener('click', () => {
-      state.powers.push({ nivel: 1, nome: '', custo: '', efeito: '' });
-      renderPowers();
-      saveState();
-    });
-
-    function renderWeapons() {
-      const container = document.getElementById('weapons-list');
-      container.innerHTML = '';
-
-      state.weapons.forEach((wp, idx) => {
-        const row = document.createElement('div');
-        row.className = 'weapon-row';
-        row.innerHTML = `
-          <div class="field-group">
-            <label class="micro-label">ARMA</label>
-            <input type="text" value="${escapeHtml(wp.nome)}" placeholder="Ex.: Faca, Revólver..." data-wfield="nome" />
-          </div>
-          <div class="field-group">
-            <label class="micro-label">DANO</label>
-            <input type="text" class="center-input" value="${escapeHtml(wp.dano)}" placeholder="Ex.: 2" data-wfield="dano" />
-          </div>
-          <div class="field-group">
-            <label class="micro-label">CRÍT.</label>
-            <input type="text" class="center-input" value="${escapeHtml(wp.crit)}" placeholder="2" data-wfield="crit" />
-          </div>
-          <div class="field-group">
-            <label class="micro-label">ALCANCE</label>
-            <input type="text" class="center-input" value="${escapeHtml(wp.alcance)}" placeholder="Curto/Médio" data-wfield="alcance" />
-          </div>
-          <div class="field-group">
-            <label class="micro-label">EFEITO</label>
-            <input type="text" value="${escapeHtml(wp.efeito)}" placeholder="Corte, perfurar..." data-wfield="efeito" />
-          </div>
-          <div class="field-group">
-            <label class="micro-label">MODIFICAÇÃO</label>
-            <input type="text" value="${escapeHtml(wp.modificacao)}" placeholder="Mira, silenciador..." data-wfield="modificacao" />
-          </div>
-          <button type="button" class="btn-del-row" title="Remover arma" onclick="removeWeapon(${idx})">X</button>
-        `;
-
-        row.querySelectorAll('input').forEach(inp => {
-          inp.addEventListener('input', e => {
-            state.weapons[idx][e.target.dataset.wfield] = e.target.value;
-            saveState();
-          });
-        });
-
-        container.appendChild(row);
-      });
-    }
-
-    function removeWeapon(idx) {
-      state.weapons.splice(idx, 1);
-      renderWeapons();
-      saveState();
-    }
-
-    document.getElementById('btn-add-weapon').addEventListener('click', () => {
-      state.weapons.push({ nome: '', dano: '', crit: '2', alcance: 'Curto/Médio', efeito: '', modificacao: '' });
-      renderWeapons();
-      saveState();
-    });
-
-    function renderBonds() {
-      const container = document.getElementById('bonds-list');
-      container.innerHTML = '';
-
-      state.bonds.forEach((bond, idx) => {
-        const row = document.createElement('div');
-        row.className = 'bond-row';
-        row.innerHTML = `
-          <div class="field-group">
-            <label class="micro-label">PESSOA / GRUPO / LUGAR</label>
-            <input type="text" value="${escapeHtml(bond.alvo)}" placeholder="Nome do vínculo..." data-bfield="alvo" />
-          </div>
-          <div class="field-group">
-            <label class="micro-label">RELAÇÃO / PROMESSA / META</label>
-            <input type="text" value="${escapeHtml(bond.relacao)}" placeholder="O que conecta vocês..." data-bfield="relacao" />
-          </div>
-          <button type="button" class="btn-del-row" title="Remover vínculo" onclick="removeBond(${idx})">X</button>
-        `;
-
-        row.querySelectorAll('input').forEach(inp => {
-          inp.addEventListener('input', e => {
-            state.bonds[idx][e.target.dataset.bfield] = e.target.value;
-            saveState();
-          });
-        });
-
-        container.appendChild(row);
-      });
-    }
-
-    function removeBond(idx) {
-      state.bonds.splice(idx, 1);
-      renderBonds();
-      saveState();
-    }
-
-    document.getElementById('btn-add-bond').addEventListener('click', () => {
-      state.bonds.push({ alvo: '', relacao: '' });
-      renderBonds();
-      saveState();
-    });
-
-  
-    let lastRollText = '';
-
-    function showRollToast(title, htmlBody, copySummary) {
-      const toast = document.getElementById('roll-toast');
-      document.getElementById('toast-title').textContent = title;
-      document.getElementById('toast-body').innerHTML = htmlBody;
-      lastRollText = copySummary;
-      toast.classList.add('visible');
-    }
-
-    document.getElementById('btn-close-toast').addEventListener('click', () => {
-      document.getElementById('roll-toast').classList.remove('visible');
-    });
-
-    document.getElementById('btn-copy-roll').addEventListener('click', () => {
-      if (!lastRollText) return;
-      const temp = document.createElement('textarea');
-      temp.value = lastRollText;
-      document.body.appendChild(temp);
-      temp.select();
-      document.execCommand('copy');
-      document.body.removeChild(temp);
-
-      const btn = document.getElementById('btn-copy-roll');
-      btn.textContent = 'COPIADO';
-      setTimeout(() => { btn.textContent = 'COPIAR'; }, 1200);
-    });
-
-    function rollDicePool(count) {
-      const qty = Math.max(1, Math.min(20, count));
-      const results = [];
-      for (let i = 0; i < qty; i++) {
-        results.push(Math.floor(Math.random() * 6) + 1);
-      }
-      return results;
-    }
-
-    function rollSingleDie(label, attrKey) {
-      const attrVal = parseInt(state.attributes[attrKey], 10) || 1;
-      const dice = rollDicePool(1);
-      const d = dice[0];
-      const total = d + attrVal;
-      const isCrit = d === 6;
-
-      const pillsHtml = `<span class="die-chip ${isCrit ? 'success' : ''}">${d}</span>`;
-      const body = `
-        <div>1d6 [${d}] + ${attrVal} (Atributo) = <strong>${total}</strong></div>
-        <div class="roll-dice-pills">${pillsHtml}</div>
-      `;
-      const summary = `[LOST PARADISE] ${state.nome || 'Sobrevivente'} - ${label}: 1d6 [${d}] + ${attrVal} = ${total}`;
-      showRollToast(label, body, summary);
-    }
-
-    function rollSkill(skillId) {
-      const skill = SKILLS_LIST.find(s => s.id === skillId);
-      if (!skill) return;
-      const attrVal = Math.max(1, parseInt(state.attributes[skill.attr], 10) || 1);
-      const isTrained = !!state.trainedSkills[skill.id];
-      const diceCount = attrVal + (isTrained ? 1 : 0);
-      const dice = rollDicePool(diceCount);
-      const maxDie = Math.max(...dice);
-      const successes = dice.filter(v => v >= 5).length;
-
-      const skillDisplayName = skill.isProf && state.profArea
-        ? `PROF.: ${state.profArea.toUpperCase()}`
-        : skill.name;
-
-      const pillsHtml = dice
-        .map(v => `<span class="die-chip ${v >= 5 ? 'success' : ''}">${v}</span>`)
-        .join('');
-
-      const body = `
-        <div>Parada: <strong>${diceCount}d6</strong> (${attrVal} Atributo${isTrained ? ' + 1 Treinada' : ''})</div>
-        <div>Maior dado: <strong>${maxDie}</strong> • Sucessos (5-6): <strong>${successes}</strong></div>
-        <div class="roll-dice-pills">${pillsHtml}</div>
-      `;
-      const summary = `[LOST PARADISE] ${state.nome || 'Sobrevivente'} - Perícia ${skillDisplayName} (${diceCount}d6): [${dice.join(', ')}] | Maior: ${maxDie} | Sucessos: ${successes}`;
-      showRollToast(`PERÍCIA: ${skillDisplayName}`, body, summary);
-    }
-
-    function rollDefense(type) {
-      const isEsq = type === 'esquiva';
-      const count = Math.max(1, parseInt(isEsq ? state.esqDados : state.bloqDados, 10) || 1);
-      const postura = parseInt(isEsq ? state.esqPostura : state.bloqPostura, 10) || 0;
-      const dice = rollDicePool(count);
-      const sum = dice.reduce((a, b) => a + b, 0) + postura;
-      const title = isEsq ? 'DEFESA: ESQUIVA' : 'DEFESA: BLOQUEIO';
-
-      const pillsHtml = dice
-        .map(v => `<span class="die-chip ${v >= 5 ? 'success' : ''}">${v}</span>`)
-        .join('');
-
-      const body = `
-        <div>Rolagem: <strong>${count}d6</strong> + ${postura} (Postura) = <strong>${sum}</strong></div>
-        <div class="roll-dice-pills">${pillsHtml}</div>
-      `;
-      const summary = `[LOST PARADISE] ${state.nome || 'Sobrevivente'} - ${title}: [${dice.join(', ')}] + ${postura} Postura = ${sum}`;
-      showRollToast(title, body, summary);
-    }
-
-    function syncUIToState() {
-      document.querySelectorAll('[data-field]').forEach(el => {
-        const k = el.dataset.field;
-        if (state[k] !== undefined) el.value = state[k];
-      });
-
-      document.querySelectorAll('[data-attr]').forEach(el => {
-        const k = el.dataset.attr;
-        if (state.attributes[k] !== undefined) el.value = state.attributes[k];
-      });
-
-      document.querySelectorAll('[data-bool]').forEach(el => {
-        const k = el.dataset.bool;
-        el.checked = !!state.bools[k];
-      });
-
-      document.querySelectorAll('[data-wear]').forEach(el => {
-        const idx = parseInt(el.dataset.wear, 10);
-        el.checked = !!state.wear[idx];
-      });
-
-      updateStatePills();
-      updateVitalBadges();
-      renderSkills();
       renderPowers();
       renderWeapons();
       renderBonds();
-    }
-
-    function updateStatePills() {
-      document.querySelectorAll('#state-selector .state-pill').forEach(btn => {
-        const st = btn.dataset.state;
-        const labelBase = st === 'firme' ? 'FIRME' : st === 'instavel' ? 'INSTÁVEL' : 'DESGASTE';
-        if (state.estado === st) {
-          btn.classList.add('active');
-          btn.textContent = `● ${labelBase}`;
-        } else {
-          btn.classList.remove('active');
-          btn.textContent = `○ ${labelBase}`;
-        }
-      });
-    }
-
-    function bindStaticEvents() {
-      document.querySelectorAll('[data-field]').forEach(el => {
-        el.addEventListener('input', e => {
-          const k = e.target.dataset.field;
-          state[k] = e.target.type === 'number' ? (parseInt(e.target.value, 10) || 0) : e.target.value;
-          if (k === 'intCur' || k === 'intMax' || k === 'pulsoCur' || k === 'pulsoMax') {
-            updateVitalBadges();
-          }
-          saveState();
-        });
-      });
-
-      document.querySelectorAll('[data-attr]').forEach(el => {
-        el.addEventListener('input', e => {
-          state.attributes[e.target.dataset.attr] = parseInt(e.target.value, 10) || 0;
-          saveState();
-        });
-      });
-
-      document.querySelectorAll('[data-bool]').forEach(el => {
-        el.addEventListener('change', e => {
-          state.bools[e.target.dataset.bool] = e.target.checked;
-          saveState();
-        });
-      });
-
-      document.querySelectorAll('[data-wear]').forEach(el => {
-        el.addEventListener('change', e => {
-          const idx = parseInt(e.target.dataset.wear, 10);
-          state.wear[idx] = e.target.checked;
-          saveState();
-        });
-      });
-
-      document.getElementById('btn-zerar-desgaste').addEventListener('click', () => {
-        state.wear = [false, false, false];
-        document.querySelectorAll('[data-wear]').forEach(el => { el.checked = false; });
-        saveState();
-      });
-
-      document.querySelectorAll('#state-selector .state-pill').forEach(btn => {
-        btn.addEventListener('click', () => {
-          state.estado = btn.dataset.state;
-          updateStatePills();
-          saveState();
-        });
-      });
-
-      // Exportar JSON
-      document.getElementById('btn-export').addEventListener('click', () => {
-        const payload = {
-          sistema: 'Lost Paradise RPG',
-          tema603010: {
-            c60: pick60.value,
-            c30: pick30.value,
-            c10: pick10.value
-          },
-          personagem: state
-        };
-        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        const slug = (state.nome || 'sobrevivente').toLowerCase().replace(/[^a-z0-9]+/g, '-');
-        a.href = url;
-        a.download = `lost-paradise-${slug}.json`;
-        a.click();
-        URL.revokeObjectURL(url);
-      });
-
-      // Importar JSON
-      const fileInp = document.getElementById('file-import');
-      document.getElementById('btn-import').addEventListener('click', () => fileInp.click());
-      fileInp.addEventListener('change', e => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = ev => {
-          try {
-            const parsed = JSON.parse(ev.target.result);
-            if (parsed.tema603010) {
-              presetBtns.forEach(b => b.classList.remove('active'));
-              applyTheme(parsed.tema603010, true);
-            }
-            if (parsed.personagem) {
-              state = { ...getDefaultState(), ...parsed.personagem };
-              syncUIToState();
-              saveState();
-              showRollToast('ARQUIVO IMPORTADO', 'Ficha e esquema de cores carregados com sucesso.', 'Ficha importada');
-            }
-          } catch (err) {
-            showRollToast('ERRO DE IMPORTAÇÃO', 'Não foi possível ler o arquivo JSON selecionado.', 'Erro JSON');
-          }
-        };
-        reader.readAsText(file);
-        fileInp.value = '';
-      });
-
-      // Limpar Ficha
-      document.getElementById('btn-clear').addEventListener('click', () => {
-        state = getDefaultState();
-        syncUIToState();
-        saveState();
-        showRollToast('FICHA REINICIADA', 'Todos os campos foram restaurados para o padrão.', 'Ficha limpa');
-      });
-    }
-
-   
-    (function init() {
-      const savedTheme = localStorage.getItem(THEME_KEY);
-      if (savedTheme) {
-        try {
-          applyTheme(JSON.parse(savedTheme), false);
-          presetBtns.forEach(b => b.classList.remove('active'));
-        } catch (e) {
-          applyTheme(PRESETS.ambar, false);
-        }
-      } else {
-        applyTheme(PRESETS.ambar, false);
-      }
-
-      const savedData = localStorage.getItem(DATA_KEY);
-      if (savedData) {
-        try {
-          state = { ...getDefaultState(), ...JSON.parse(savedData) };
-        } catch (e) {
-          state = getDefaultState();
-        }
-      }
-
-      bindStaticEvents();
-      syncUIToState();
-    })();
+      syncAllInputsFromState();
+    });
   </script>
 </body>
 </html>
