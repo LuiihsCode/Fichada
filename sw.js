@@ -1,7 +1,7 @@
 // Service worker da ficha Lost Paradise.
 // Não toca no localStorage: os dados da ficha continuam salvos só no navegador.
 // Para forçar todo mundo a baixar arquivos novos de apoio (ícones, manifest), troque o número da versão.
-const CACHE = 'lost-paradise-ficha-v1';
+const CACHE = 'lost-paradise-ficha-v2';
 const SHELL = ['./', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', (event) => {
